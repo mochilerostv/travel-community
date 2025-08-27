@@ -1,71 +1,51 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { stripe } from '@/lib/stripe'
+import { type NextRequest, NextResponse } from "next/server"
 
-export async function GET(request: NextRequest) {
+export async function POST(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url)
-    const sessionId = searchParams.get('session_id')
-    const customerId = searchParams.get('customer_id')
+    const body = await request.json()
+    const { email, user_id } = body
 
-    if (sessionId) {
-      // Get session details
-      const session = await stripe.checkout.sessions.retrieve(sessionId)
-      
-      if (session.subscription) {
-        const subscription = await stripe.subscriptions.retrieve(session.subscription as string)
-        
-        return NextResponse.json({
-          success: true,
-          data: {
-            subscriptionId: subscription.id,
-            customerId: subscription.customer,
-            status: subscription.status,
-            currentPeriodStart: new Date(subscription.current_period_start * 1000),
-            currentPeriodEnd: new Date(subscription.current_period_end * 1000),
-            cancelAtPeriodEnd: subscription.cancel_at_period_end,
-          }
-        })
-      }
+    if (!email && !user_id) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Email o user_id requerido",
+        },
+        { status: 400 },
+      )
     }
 
-    if (customerId) {
-      // Get customer subscriptions
-      const subscriptions = await stripe.subscriptions.list({
-        customer: customerId,
-        status: 'active',
-        limit: 1,
-      })
-
-      if (subscriptions.data.length > 0) {
-        const subscription = subscriptions.data[0]
-        
-        return NextResponse.json({
-          success: true,
-          data: {
-            subscriptionId: subscription.id,
-            customerId: subscription.customer,
-            status: subscription.status,
-            currentPeriodStart: new Date(subscription.current_period_start * 1000),
-            currentPeriodEnd: new Date(subscription.current_period_end * 1000),
-            cancelAtPeriodEnd: subscription.cancel_at_period_end,
-          }
-        })
-      }
+    // Simular verificación de suscripción
+    // En producción, aquí consultarías Stripe o tu base de datos
+    const mockSubscription = {
+      active: true,
+      plan: "premium",
+      expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+      features: ["ai_extraction", "premium_deals", "alerts"],
     }
 
-    return NextResponse.json(
-      { success: false, message: 'No subscription found' },
-      { status: 404 }
-    )
-
+    return NextResponse.json({
+      success: true,
+      subscription: mockSubscription,
+      timestamp: new Date().toISOString(),
+    })
   } catch (error) {
-    console.error('Error getting subscription status:', error)
+    console.error("Subscription check error:", error)
     return NextResponse.json(
-      { 
-        success: false, 
-        message: 'Error obteniendo estado de suscripción' 
+      {
+        success: false,
+        error: error instanceof Error ? error.message : "Error verificando suscripción",
       },
-      { status: 500 }
+      { status: 500 },
     )
   }
+}
+
+export async function GET() {
+  return NextResponse.json({
+    success: true,
+    message: "Endpoint de verificación de suscripción activo",
+    methods: ["POST"],
+    timestamp: new Date().toISOString(),
+  })
 }
