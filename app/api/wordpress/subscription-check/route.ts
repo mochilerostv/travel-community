@@ -1,60 +1,51 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { stripe } from '@/lib/stripe'
+import { type NextRequest, NextResponse } from "next/server"
 
-export async function GET(request: NextRequest) {
+export async function POST(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url)
-    const email = searchParams.get('email')
-    
-    if (!email) {
+    const body = await request.json()
+    const { email, user_id } = body
+
+    if (!email && !user_id) {
       return NextResponse.json(
-        { success: false, message: 'Email is required' },
-        { status: 400 }
+        {
+          success: false,
+          error: "Email o user_id requerido",
+        },
+        { status: 400 },
       )
     }
 
-    // Search for customer by email
-    const customers = await stripe.customers.list({
-      email: email,
-      limit: 1,
-    })
-
-    if (customers.data.length === 0) {
-      return NextResponse.json({
-        success: true,
-        data: { hasSubscription: false, status: 'no_customer' }
-      })
+    // Simular verificación de suscripción
+    // En producción, aquí consultarías Stripe o tu base de datos
+    const mockSubscription = {
+      active: true,
+      plan: "premium",
+      expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+      features: ["ai_extraction", "premium_deals", "alerts"],
     }
-
-    const customer = customers.data[0]
-
-    // Get active subscriptions
-    const subscriptions = await stripe.subscriptions.list({
-      customer: customer.id,
-      status: 'active',
-      limit: 1,
-    })
-
-    const hasActiveSubscription = subscriptions.data.length > 0
 
     return NextResponse.json({
       success: true,
-      data: {
-        hasSubscription: hasActiveSubscription,
-        status: hasActiveSubscription ? 'active' : 'inactive',
-        customerId: customer.id,
-        subscriptionId: hasActiveSubscription ? subscriptions.data[0].id : null
-      }
+      subscription: mockSubscription,
+      timestamp: new Date().toISOString(),
     })
-
   } catch (error) {
-    console.error('Error checking WordPress subscription:', error)
+    console.error("Subscription check error:", error)
     return NextResponse.json(
-      { 
-        success: false, 
-        message: 'Error checking subscription status' 
+      {
+        success: false,
+        error: error instanceof Error ? error.message : "Error verificando suscripción",
       },
-      { status: 500 }
+      { status: 500 },
     )
   }
+}
+
+export async function GET() {
+  return NextResponse.json({
+    success: true,
+    message: "Endpoint de verificación de suscripción activo",
+    methods: ["POST"],
+    timestamp: new Date().toISOString(),
+  })
 }
