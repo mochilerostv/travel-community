@@ -1,106 +1,108 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { type NextRequest, NextResponse } from "next/server"
+import { generateText } from "ai"
+import { openai } from "@ai-sdk/openai"
 
-// Mock AI price scanning service
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json()
-    const { action, settings } = body
+    // Verificar token de autorización
+    const authHeader = request.headers.get("authorization")
+    const expectedToken = process.env.AI_PROXY_TOKEN
 
-    if (action === 'scan') {
-      // Simulate AI scanning process
-      await new Promise(resolve => setTimeout(resolve, 3000))
-
-      // Mock detected deals
-      const detectedDeals = [
-        {
-          source: 'Booking.com',
-          type: 'hotel',
-          title: 'Hotel Plaza - Roma',
-          originalPrice: 280,
-          currentPrice: 95,
-          discount: 66,
-          confidence: 0.95,
-          url: 'https://booking.com/hotel-plaza-roma'
-        },
-        {
-          source: 'Skyscanner',
-          type: 'flight',
-          title: 'Madrid → Tokio',
-          originalPrice: 950,
-          currentPrice: 420,
-          discount: 56,
-          confidence: 0.88,
-          url: 'https://skyscanner.com/mad-nrt'
-        }
-      ]
-
-      return NextResponse.json({
-        success: true,
-        message: 'Escaneo completado',
-        data: {
-          dealsFound: detectedDeals.length,
-          deals: detectedDeals,
-          scanTime: new Date().toISOString()
-        }
-      })
+    if (!authHeader || !expectedToken || authHeader !== `Bearer ${expectedToken}`) {
+      return NextResponse.json({ error: "No autorizado" }, { status: 401 })
     }
 
-    if (action === 'configure') {
-      // Save AI configuration
-      // In a real implementation, save to database
-      
-      return NextResponse.json({
-        success: true,
-        message: 'Configuración de IA actualizada',
-        data: settings
-      })
+    const { url, content, type } = await request.json()
+
+    if (!url && !content) {
+      return NextResponse.json({ error: "URL o contenido requerido" }, { status: 400 })
     }
 
-    return NextResponse.json(
-      { 
-        success: false, 
-        message: 'Acción no válida' 
-      },
-      { status: 400 }
-    )
+    // Verificar que OpenAI esté configurado
+    if (!process.env.OPENAI_API_KEY) {
+      return NextResponse.json({ error: "OpenAI no configurado" }, { status: 500 })
+    }
 
-  } catch (error) {
-    console.error('AI Scanner error:', error)
-    return NextResponse.json(
-      { 
-        success: false, 
-        message: 'Error en el sistema de IA' 
-      },
-      { status: 500 }
-    )
-  }
+    const prompt = `
+Analiza el siguiente contenido de viajes y extrae información sobre ofertas de vuelos, hoteles o seguros de viaje.
+
+${content ? `Contenido: ${content}` : `URL: ${url}`}
+
+Extrae la siguiente información si está disponible:
+- Título de la oferta
+- Descripción
+- Precio actual
+- Precio original (si hay descuento)
+- Destino
+- Fechas de validez
+- Categoría (flight, hotel, insurance)
+- Porcentaje de descuento
+- Detalles adicionales relevantes
+
+Responde en formato JSON con la estructura:
+{
+  "offers": [
+    {
+      "title": "string",
+      "description": "string",
+      "price": number,
+      "originalPrice": number,
+      "destination": "string",
+      "validUntil": "string",
+      "category": "flight|hotel|insurance",
+      "discount": number,
+      "savings": number,
+      "details": "string"
+    }
+  ],
+  "confidence": number,
+  "source": "string"
 }
 
-export async function GET() {
-  try {
-    // Return AI system status
-    const status = {
-      active: true,
-      lastScan: new Date(Date.now() - 15 * 60 * 1000).toISOString(), // 15 minutes ago
-      dealsDetectedToday: 247,
-      sitesMonitored: 15,
-      accuracy: 98.5,
-      nextScan: new Date(Date.now() + 5 * 60 * 1000).toISOString() // 5 minutes from now
+Si no encuentras ofertas válidas, devuelve un array vacío en "offers".
+`
+
+    const { text } = await generateText({
+      model: openai("gpt-4o"),
+      prompt,
+      maxTokens: 1000,
+    })
+
+    let extractedData
+    try {
+      extractedData = JSON.parse(text)
+    } catch (parseError) {
+      console.error("Error parsing AI response:", parseError)
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Error procesando respuesta de IA",
+          rawResponse: text,
+        },
+        { status: 500 },
+      )
     }
 
     return NextResponse.json({
       success: true,
-      data: status
+      data: extractedData,
+      timestamp: new Date().toISOString(),
     })
-
   } catch (error) {
-    console.error('Error getting AI status:', error)
-    return NextResponse.json(
-      { 
-        success: false, 
-        message: 'Error obteniendo estado de IA' 
-      },
-      { status: 500 }
-    )
+    console.error("Error in AI scanner:", error)
+    return NextResponse.json({ error: "Error interno del servidor" }, { status: 500 })
   }
+}
+
+export async function GET() {
+  return NextResponse.json({
+    success: true,
+    message: "AI Scanner API",
+    description: "Extrae ofertas de viaje usando inteligencia artificial",
+    methods: ["POST"],
+    requiredHeaders: ["Authorization: Bearer <AI_PROXY_TOKEN>"],
+    requiredFields: ["url OR content"],
+    optionalFields: ["type"],
+    timestamp: new Date().toISOString(),
+  })
 }

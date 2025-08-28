@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react"
 import Link from "next/link"
-import { Plane, Check, ArrowLeft, Zap, ShieldCheck, Bell } from 'lucide-react'
+import { Plane, Check, ArrowLeft, Zap, ShieldCheck, Bell } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -16,13 +16,11 @@ export default function PricingPage() {
   const [loadingPlan, setLoadingPlan] = useState<PlanKey | null>(null)
 
   const plans = useMemo(() => {
-    // Copia visible por mes, con etiqueta secundaria según facturación
     return {
       premium: {
         name: "Premium",
         monthly: "€1,99",
         annual: "€1,99",
-        // Los precios mostrados son "por mes", pero el cobro puede ser anual (Stripe)
         annualLabel: "Cobro anual: €23,88",
         monthlyLabel: "Cobro mensual: €1,99",
         gradient: "from-blue-500 to-cyan-500",
@@ -41,12 +39,7 @@ export default function PricingPage() {
         annualLabel: "Cobro anual: €29,88",
         monthlyLabel: "Cobro mensual: €2,49",
         gradient: "from-emerald-500 to-teal-500",
-        features: [
-          "Todo lo de Premium",
-          "Alertas prioritarias",
-          "Más destinos y horarios",
-          "Soporte prioritario 24/7",
-        ],
+        features: ["Todo lo de Premium", "Alertas prioritarias", "Más destinos y horarios", "Soporte prioritario 24/7"],
         badge: "Recomendado",
       },
     } as const
@@ -55,25 +48,32 @@ export default function PricingPage() {
   const subscribe = async (plan: PlanKey) => {
     try {
       setLoadingPlan(plan)
+      console.log("🔄 Iniciando suscripción para plan:", plan)
+
       const res = await fetch("/api/create-checkout-session", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           plan,
-          billing, // soportado por el route handler
+          billing,
           successUrl: `${window.location.origin}/dashboard?session_id={CHECKOUT_SESSION_ID}`,
           cancelUrl: `${window.location.origin}/pricing`,
         }),
       })
+
+      console.log("📡 Response status:", res.status)
       const data = await res.json()
+      console.log("📦 Response data:", data)
+
       if (data?.url) {
+        console.log("✅ Redirigiendo a Stripe:", data.url)
         window.location.href = data.url
       } else {
-        console.error("No checkout URL returned", data)
-        alert("No se pudo iniciar el checkout. Revisa la configuración de Stripe.")
+        console.error("❌ No checkout URL returned", data)
+        alert(`No se pudo iniciar el checkout. ${data.error || "Error desconocido"}`)
       }
     } catch (e) {
-      console.error(e)
+      console.error("❌ Error en suscripción:", e)
       alert("Error iniciando el checkout")
     } finally {
       setLoadingPlan(null)
@@ -95,12 +95,11 @@ export default function PricingPage() {
           <h2 className="text-4xl font-bold text-gray-900 mb-2">Escoge tu plan</h2>
           <p className="text-gray-600">Precios mostrados por mes. Puedes elegir facturación mensual o anual.</p>
 
-          {/* Toggle de facturación */}
           <div className="mt-5 inline-flex items-center gap-1 rounded-full bg-white p-1 shadow">
             <button
               className={cn(
                 "px-4 py-2 rounded-full text-sm font-medium transition-colors",
-                billing === "monthly" ? "bg-blue-600 text-white" : "text-gray-700"
+                billing === "monthly" ? "bg-blue-600 text-white" : "text-gray-700",
               )}
               onClick={() => setBilling("monthly")}
               aria-pressed={billing === "monthly"}
@@ -110,7 +109,7 @@ export default function PricingPage() {
             <button
               className={cn(
                 "px-4 py-2 rounded-full text-sm font-medium transition-colors",
-                billing === "annual" ? "bg-blue-600 text-white" : "text-gray-700"
+                billing === "annual" ? "bg-blue-600 text-white" : "text-gray-700",
               )}
               onClick={() => setBilling("annual")}
               aria-pressed={billing === "annual"}
@@ -123,7 +122,6 @@ export default function PricingPage() {
           </p>
         </div>
 
-        {/* Planes */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
           {(Object.keys(plans) as PlanKey[]).map((key) => {
             const p = plans[key]
@@ -134,16 +132,14 @@ export default function PricingPage() {
                     <Badge
                       className={cn(
                         "w-fit mx-auto mb-2",
-                        key === "premium_plus" ? "bg-emerald-100 text-emerald-800" : "bg-blue-100 text-blue-800"
+                        key === "premium_plus" ? "bg-emerald-100 text-emerald-800" : "bg-blue-100 text-blue-800",
                       )}
                     >
                       {p.badge}
                     </Badge>
                   )}
                   <CardTitle className="text-2xl">{p.name}</CardTitle>
-                  <CardDescription>
-                    {billing === "annual" ? p.annualLabel : p.monthlyLabel}
-                  </CardDescription>
+                  <CardDescription>{billing === "annual" ? p.annualLabel : p.monthlyLabel}</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className={cn("rounded-xl p-6 bg-gradient-to-br text-white text-center mb-6", p.gradient)}>
@@ -180,7 +176,6 @@ export default function PricingPage() {
           })}
         </div>
 
-        {/* Beneficios destacados */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10">
           <Card>
             <CardHeader className="space-y-1">

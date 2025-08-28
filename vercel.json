@@ -1,0 +1,22 @@
+{
+  "version": 2,
+  "name": "travel-community-recreated",
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/next"
+    }
+  ],
+  "env": {
+    "OPENAI_API_KEY": "@openai_api_key",
+    "AI_PROXY_TOKEN": "@ai_proxy_token"
+  },
+  "functions": {
+    "app/api/wp/ai-extract/route.ts": {
+      "maxDuration": 30
+    },
+    "app/api/ingest/route.ts": {
+      "maxDuration": 60
+    }
+  }
+}

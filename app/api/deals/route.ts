@@ -1,128 +1,172 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { type NextRequest, NextResponse } from "next/server"
 
-// Mock database of deals
+// Mock data - en producción esto vendría de una base de datos
 const mockDeals = [
   {
-    id: 1,
-    type: 'flight',
-    from: 'MAD',
-    to: 'NYC',
-    fromCity: 'Madrid',
-    toCity: 'Nueva York',
-    originalPrice: 850,
-    dealPrice: 299,
-    savings: 551,
-    airline: 'Iberia',
-    dates: '15-22 Mar',
-    dealType: 'Error de Tarifa',
-    continent: 'América del Norte',
-    verified: true,
-    timeLeft: '2h 15m',
-    createdAt: new Date().toISOString()
+    id: "1",
+    title: "Vuelo Madrid-París desde €29",
+    description: "Vuelo directo con Vueling. Fechas flexibles en marzo y abril. Equipaje de mano incluido.",
+    price: 29,
+    originalPrice: 199,
+    category: "flight",
+    destination: "París, Francia",
+    validUntil: "2024-04-30",
+    isActive: true,
+    createdAt: "2024-02-15",
+    image: "/paris-eiffel-tower.png",
+    savings: 170,
+    discount: 85,
   },
   {
-    id: 2,
-    type: 'flight',
-    from: 'BCN',
-    to: 'BKK',
-    fromCity: 'Barcelona',
-    toCity: 'Bangkok',
-    originalPrice: 720,
-    dealPrice: 385,
-    savings: 335,
-    airline: 'Qatar Airways',
-    dates: '10-24 Abr',
-    dealType: 'Oferta Flash',
-    continent: 'Asia',
-    verified: true,
-    timeLeft: '5h 42m',
-    createdAt: new Date().toISOString()
-  }
+    id: "2",
+    title: "Hotel 5* en Roma desde €45/noche",
+    description: "Hotel de lujo en el centro histórico. Desayuno incluido y cancelación gratuita.",
+    price: 45,
+    originalPrice: 180,
+    category: "hotel",
+    destination: "Roma, Italia",
+    validUntil: "2024-05-15",
+    isActive: true,
+    createdAt: "2024-02-14",
+    image: "/rome-colosseum.png",
+    savings: 135,
+    discount: 75,
+  },
+  {
+    id: "3",
+    title: "Seguro de viaje anual desde €19",
+    description: "Cobertura mundial con asistencia 24/7. Incluye COVID-19 y deportes de aventura.",
+    price: 19,
+    originalPrice: 89,
+    category: "insurance",
+    destination: "Mundial",
+    validUntil: "2024-12-31",
+    isActive: true,
+    createdAt: "2024-02-13",
+    image: "/travel-insurance-concept.png",
+    savings: 70,
+    discount: 79,
+  },
+  {
+    id: "4",
+    title: "Resort Todo Incluido Cancún desde €299",
+    description: "7 noches en resort 5* frente al mar. Todo incluido con bebidas premium.",
+    price: 299,
+    originalPrice: 899,
+    category: "hotel",
+    destination: "Cancún, México",
+    validUntil: "2024-06-30",
+    isActive: true,
+    createdAt: "2024-02-12",
+    image: "/cancun-beach-resort.png",
+    savings: 600,
+    discount: 67,
+  },
 ]
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
-    const continent = searchParams.get('continent')
-    const airport = searchParams.get('airport')
-    const type = searchParams.get('type')
+    const category = searchParams.get("category")
+    const limit = searchParams.get("limit")
 
     let filteredDeals = mockDeals
 
-    if (continent && continent !== 'all') {
-      filteredDeals = filteredDeals.filter(deal => deal.continent === continent)
+    // Filtrar por categoría si se especifica
+    if (category && category !== "all") {
+      filteredDeals = mockDeals.filter((deal) => deal.category === category)
     }
 
-    if (airport && airport !== 'all') {
-      filteredDeals = filteredDeals.filter(deal => deal.from === airport)
-    }
-
-    if (type && type !== 'all') {
-      filteredDeals = filteredDeals.filter(deal => deal.type === type)
+    // Limitar resultados si se especifica
+    if (limit) {
+      const limitNum = Number.parseInt(limit)
+      filteredDeals = filteredDeals.slice(0, limitNum)
     }
 
     return NextResponse.json({
       success: true,
-      data: filteredDeals,
-      total: filteredDeals.length
+      deals: filteredDeals,
+      total: filteredDeals.length,
+      timestamp: new Date().toISOString(),
     })
-
   } catch (error) {
-    console.error('Error fetching deals:', error)
-    return NextResponse.json(
-      { 
-        success: false, 
-        message: 'Error obteniendo ofertas' 
-      },
-      { status: 500 }
-    )
+    console.error("Error fetching deals:", error)
+    return NextResponse.json({ error: "Error interno del servidor" }, { status: 500 })
   }
 }
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    
-    // Validate required fields
-    const requiredFields = ['type', 'title', 'originalPrice', 'dealPrice', 'continent']
-    for (const field of requiredFields) {
-      if (!body[field]) {
-        return NextResponse.json(
-          { 
-            success: false, 
-            message: `Campo requerido: ${field}` 
-          },
-          { status: 400 }
-        )
-      }
+    const { title, description, price, originalPrice, category, destination, validUntil } = body
+
+    // Validar campos requeridos
+    if (!title || !description || !price || !originalPrice || !category || !destination || !validUntil) {
+      return NextResponse.json({ error: "Todos los campos son requeridos" }, { status: 400 })
     }
 
-    // Create new deal
+    // Validar categoría
+    if (!["flight", "hotel", "insurance"].includes(category)) {
+      return NextResponse.json({ error: "Categoría no válida" }, { status: 400 })
+    }
+
+    // Crear nueva oferta (en producción se guardaría en base de datos)
     const newDeal = {
-      id: Date.now(),
-      ...body,
-      savings: body.originalPrice - body.dealPrice,
-      verified: false,
-      createdAt: new Date().toISOString()
+      id: Date.now().toString(),
+      title,
+      description,
+      price: Number.parseFloat(price),
+      originalPrice: Number.parseFloat(originalPrice),
+      category,
+      destination,
+      validUntil,
+      isActive: true,
+      createdAt: new Date().toISOString(),
+      image: `/placeholder.svg?height=200&width=300&query=${encodeURIComponent(title)}`,
+      savings: Number.parseFloat(originalPrice) - Number.parseFloat(price),
+      discount: Math.round(
+        ((Number.parseFloat(originalPrice) - Number.parseFloat(price)) / Number.parseFloat(originalPrice)) * 100,
+      ),
     }
 
-    // In a real implementation, save to database
-    mockDeals.push(newDeal)
+    // En producción, aquí se guardaría en la base de datos
+    mockDeals.unshift(newDeal)
 
     return NextResponse.json({
       success: true,
-      message: 'Oferta creada exitosamente',
-      data: newDeal
+      deal: newDeal,
+      message: "Oferta creada exitosamente",
     })
-
   } catch (error) {
-    console.error('Error creating deal:', error)
-    return NextResponse.json(
-      { 
-        success: false, 
-        message: 'Error creando oferta' 
-      },
-      { status: 500 }
-    )
+    console.error("Error creating deal:", error)
+    return NextResponse.json({ error: "Error interno del servidor" }, { status: 500 })
+  }
+}
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url)
+    const dealId = searchParams.get("id")
+
+    if (!dealId) {
+      return NextResponse.json({ error: "ID de oferta requerido" }, { status: 400 })
+    }
+
+    // En producción, aquí se eliminaría de la base de datos
+    const dealIndex = mockDeals.findIndex((deal) => deal.id === dealId)
+
+    if (dealIndex === -1) {
+      return NextResponse.json({ error: "Oferta no encontrada" }, { status: 404 })
+    }
+
+    mockDeals.splice(dealIndex, 1)
+
+    return NextResponse.json({
+      success: true,
+      message: "Oferta eliminada exitosamente",
+    })
+  } catch (error) {
+    console.error("Error deleting deal:", error)
+    return NextResponse.json({ error: "Error interno del servidor" }, { status: 500 })
   }
 }

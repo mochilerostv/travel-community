@@ -1,167 +1,283 @@
 "use client"
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
+import type React from "react"
+
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Switch } from "@/components/ui/switch"
-import { Plus, Edit, Trash2, Users, TrendingUp, Bot, Settings, Eye, DollarSign } from 'lucide-react'
+import {
+  Users,
+  CreditCard,
+  Plane,
+  Hotel,
+  Shield,
+  Plus,
+  Edit,
+  Trash2,
+  Eye,
+  TrendingUp,
+  DollarSign,
+  Activity,
+} from "lucide-react"
+
+interface Deal {
+  id: string
+  title: string
+  description: string
+  price: number
+  originalPrice: number
+  category: "flight" | "hotel" | "insurance"
+  destination: string
+  validUntil: string
+  isActive: boolean
+  createdAt: string
+}
+
+interface User {
+  id: string
+  email: string
+  plan: "premium" | "premium_plus"
+  status: "active" | "cancelled" | "past_due"
+  createdAt: string
+  lastPayment: string
+}
+
+interface Stats {
+  totalUsers: number
+  activeSubscriptions: number
+  monthlyRevenue: number
+  totalDeals: number
+  conversionRate: number
+}
 
 export default function AdminPage() {
+  const [deals, setDeals] = useState<Deal[]>([])
+  const [users, setUsers] = useState<User[]>([])
+  const [stats, setStats] = useState<Stats>({
+    totalUsers: 0,
+    activeSubscriptions: 0,
+    monthlyRevenue: 0,
+    totalDeals: 0,
+    conversionRate: 0,
+  })
+  const [loading, setLoading] = useState(true)
   const [newDeal, setNewDeal] = useState({
-    type: "flight",
     title: "",
-    from: "",
-    to: "",
+    description: "",
+    price: "",
     originalPrice: "",
-    dealPrice: "",
-    airline: "",
-    dates: "",
-    category: "",
-    continent: "",
-    description: ""
+    category: "flight" as const,
+    destination: "",
+    validUntil: "",
   })
 
-  const [aiSettings, setAiSettings] = useState({
-    enabled: true,
-    scanInterval: "15",
-    priceThreshold: "30",
-    autoPublish: false
-  })
+  useEffect(() => {
+    fetchData()
+  }, [])
 
-  const deals = [
-    {
-      id: 1,
-      type: "flight",
-      title: "Madrid → Nueva York",
-      originalPrice: 850,
-      dealPrice: 299,
-      status: "active",
-      views: 1247,
-      clicks: 89,
-      conversions: 12
-    },
-    {
-      id: 2,
-      type: "hotel",
-      title: "Hotel Luxury Palace - París",
-      originalPrice: 320,
-      dealPrice: 89,
-      status: "active",
-      views: 892,
-      clicks: 67,
-      conversions: 8
+  const fetchData = async () => {
+    try {
+      setLoading(true)
+
+      // Fetch deals
+      const dealsResponse = await fetch("/api/deals")
+      const dealsData = await dealsResponse.json()
+      setDeals(dealsData.deals || [])
+
+      // Fetch users (mock data for now)
+      const mockUsers: User[] = [
+        {
+          id: "1",
+          email: "usuario1@example.com",
+          plan: "premium",
+          status: "active",
+          createdAt: "2024-01-15",
+          lastPayment: "2024-02-15",
+        },
+        {
+          id: "2",
+          email: "usuario2@example.com",
+          plan: "premium_plus",
+          status: "active",
+          createdAt: "2024-01-20",
+          lastPayment: "2024-02-20",
+        },
+      ]
+      setUsers(mockUsers)
+
+      // Calculate stats
+      const mockStats: Stats = {
+        totalUsers: mockUsers.length,
+        activeSubscriptions: mockUsers.filter((u) => u.status === "active").length,
+        monthlyRevenue: mockUsers.reduce((acc, user) => {
+          return acc + (user.plan === "premium" ? 1.99 : 2.49)
+        }, 0),
+        totalDeals: dealsData.deals?.length || 0,
+        conversionRate: 12.5,
+      }
+      setStats(mockStats)
+    } catch (error) {
+      console.error("Error fetching data:", error)
+    } finally {
+      setLoading(false)
     }
-  ]
+  }
 
-  const users = [
-    {
-      id: 1,
-      name: "Juan Pérez",
-      email: "juan@email.com",
-      status: "active",
-      joinDate: "2024-01-15",
-      subscription: "premium"
-    },
-    {
-      id: 2,
-      name: "María García",
-      email: "maria@email.com",
-      status: "active",
-      joinDate: "2024-02-03",
-      subscription: "premium"
-    }
-  ]
-
-  const handleAddDeal = (e: React.FormEvent) => {
+  const handleCreateDeal = async (e: React.FormEvent) => {
     e.preventDefault()
-    console.log("Adding new deal:", newDeal)
-    // Reset form
-    setNewDeal({
-      type: "flight",
-      title: "",
-      from: "",
-      to: "",
-      originalPrice: "",
-      dealPrice: "",
-      airline: "",
-      dates: "",
-      category: "",
-      continent: "",
-      description: ""
-    })
+
+    try {
+      const response = await fetch("/api/deals", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          ...newDeal,
+          price: Number.parseFloat(newDeal.price),
+          originalPrice: Number.parseFloat(newDeal.originalPrice),
+        }),
+      })
+
+      if (response.ok) {
+        setNewDeal({
+          title: "",
+          description: "",
+          price: "",
+          originalPrice: "",
+          category: "flight",
+          destination: "",
+          validUntil: "",
+        })
+        fetchData() // Refresh data
+      }
+    } catch (error) {
+      console.error("Error creating deal:", error)
+    }
+  }
+
+  const handleDeleteDeal = async (dealId: string) => {
+    try {
+      const response = await fetch(`/api/deals/${dealId}`, {
+        method: "DELETE",
+      })
+
+      if (response.ok) {
+        fetchData() // Refresh data
+      }
+    } catch (error) {
+      console.error("Error deleting deal:", error)
+    }
+  }
+
+  const getCategoryIcon = (category: string) => {
+    switch (category) {
+      case "flight":
+        return <Plane className="h-4 w-4" />
+      case "hotel":
+        return <Hotel className="h-4 w-4" />
+      case "insurance":
+        return <Shield className="h-4 w-4" />
+      default:
+        return <Plane className="h-4 w-4" />
+    }
+  }
+
+  const getCategoryColor = (category: string) => {
+    switch (category) {
+      case "flight":
+        return "bg-blue-100 text-blue-800"
+      case "hotel":
+        return "bg-green-100 text-green-800"
+      case "insurance":
+        return "bg-purple-100 text-purple-800"
+      default:
+        return "bg-gray-100 text-gray-800"
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Cargando panel de administración...</p>
+        </div>
+      </div>
+    )
   }
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white border-b">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold text-gray-900">Panel de Administración</h1>
-            <Badge className="bg-blue-100 text-blue-800">
-              Admin Dashboard
-            </Badge>
-          </div>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900">Panel de Administración</h1>
+          <p className="text-gray-600">Gestiona ofertas, usuarios y suscripciones</p>
         </div>
-      </header>
 
-      <div className="container mx-auto px-4 py-8">
-        {/* Stats Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
           <Card>
             <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600">Usuarios Activos</p>
-                  <p className="text-2xl font-bold text-blue-600">5,247</p>
-                  <p className="text-xs text-green-600">+12% este mes</p>
-                </div>
+              <div className="flex items-center">
                 <Users className="h-8 w-8 text-blue-600" />
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-600">Usuarios Totales</p>
+                  <p className="text-2xl font-bold text-gray-900">{stats.totalUsers}</p>
+                </div>
               </div>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600">Ingresos Mensuales</p>
-                  <p className="text-2xl font-bold text-green-600">€10,441</p>
-                  <p className="text-xs text-green-600">+8% este mes</p>
+              <div className="flex items-center">
+                <CreditCard className="h-8 w-8 text-green-600" />
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-600">Suscripciones Activas</p>
+                  <p className="text-2xl font-bold text-gray-900">{stats.activeSubscriptions}</p>
                 </div>
-                <DollarSign className="h-8 w-8 text-green-600" />
               </div>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600">Ofertas Publicadas</p>
-                  <p className="text-2xl font-bold text-orange-600">247</p>
-                  <p className="text-xs text-green-600">+15 hoy</p>
+              <div className="flex items-center">
+                <DollarSign className="h-8 w-8 text-yellow-600" />
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-600">Ingresos Mensuales</p>
+                  <p className="text-2xl font-bold text-gray-900">€{stats.monthlyRevenue.toFixed(2)}</p>
                 </div>
-                <TrendingUp className="h-8 w-8 text-orange-600" />
               </div>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600">IA Activa</p>
-                  <p className="text-2xl font-bold text-purple-600">24/7</p>
-                  <p className="text-xs text-green-600">Escaneando</p>
+              <div className="flex items-center">
+                <Activity className="h-8 w-8 text-purple-600" />
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-600">Ofertas Activas</p>
+                  <p className="text-2xl font-bold text-gray-900">{stats.totalDeals}</p>
                 </div>
-                <Bot className="h-8 w-8 text-purple-600" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center">
+                <TrendingUp className="h-8 w-8 text-red-600" />
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-600">Conversión</p>
+                  <p className="text-2xl font-bold text-gray-900">{stats.conversionRate}%</p>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -169,204 +285,219 @@ export default function AdminPage() {
 
         {/* Main Content */}
         <Tabs defaultValue="deals" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="deals">Gestionar Ofertas</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="deals">Ofertas</TabsTrigger>
             <TabsTrigger value="users">Usuarios</TabsTrigger>
-            <TabsTrigger value="ai">IA y Automatización</TabsTrigger>
             <TabsTrigger value="analytics">Analíticas</TabsTrigger>
           </TabsList>
 
-          {/* Deals Management */}
+          {/* Deals Tab */}
           <TabsContent value="deals" className="space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Add New Deal */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Plus className="h-5 w-5" />
-                    Agregar Nueva Oferta
-                  </CardTitle>
-                  <CardDescription>
-                    Crea manualmente una nueva oferta para la comunidad
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <form onSubmit={handleAddDeal} className="space-y-4">
+            {/* Create Deal Form */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Plus className="h-5 w-5" />
+                  Crear Nueva Oferta
+                </CardTitle>
+                <CardDescription>Añade una nueva oferta de viaje para los miembros premium</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={handleCreateDeal} className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="type">Tipo de Oferta</Label>
-                      <Select value={newDeal.type} onValueChange={(value) => setNewDeal({...newDeal, type: value})}>
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="flight">Vuelo</SelectItem>
-                          <SelectItem value="hotel">Hotel</SelectItem>
-                          <SelectItem value="package">Paquete</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div>
-                      <Label htmlFor="title">Título</Label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Título</label>
                       <Input
-                        id="title"
                         value={newDeal.title}
-                        onChange={(e) => setNewDeal({...newDeal, title: e.target.value})}
-                        placeholder="Ej: Madrid → Nueva York"
+                        onChange={(e) => setNewDeal({ ...newDeal, title: e.target.value })}
+                        placeholder="Ej: Vuelo Madrid-París desde €29"
+                        required
                       />
                     </div>
-
-                    {newDeal.type === "flight" && (
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <Label htmlFor="from">Desde</Label>
-                          <Input
-                            id="from"
-                            value={newDeal.from}
-                            onChange={(e) => setNewDeal({...newDeal, from: e.target.value})}
-                            placeholder="MAD"
-                          />
-                        </div>
-                        <div>
-                          <Label htmlFor="to">Hasta</Label>
-                          <Input
-                            id="to"
-                            value={newDeal.to}
-                            onChange={(e) => setNewDeal({...newDeal, to: e.target.value})}
-                            placeholder="NYC"
-                          />
-                        </div>
-                      </div>
-                    )}
-
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="originalPrice">Precio Original (€)</Label>
-                        <Input
-                          id="originalPrice"
-                          type="number"
-                          value={newDeal.originalPrice}
-                          onChange={(e) => setNewDeal({...newDeal, originalPrice: e.target.value})}
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="dealPrice">Precio Oferta (€)</Label>
-                        <Input
-                          id="dealPrice"
-                          type="number"
-                          value={newDeal.dealPrice}
-                          onChange={(e) => setNewDeal({...newDeal, dealPrice: e.target.value})}
-                        />
-                      </div>
-                    </div>
-
                     <div>
-                      <Label htmlFor="continent">Continente</Label>
-                      <Select value={newDeal.continent} onValueChange={(value) => setNewDeal({...newDeal, continent: value})}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Seleccionar continente" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="europa">Europa</SelectItem>
-                          <SelectItem value="america-norte">América del Norte</SelectItem>
-                          <SelectItem value="america-sur">América del Sur</SelectItem>
-                          <SelectItem value="asia">Asia</SelectItem>
-                          <SelectItem value="africa">África</SelectItem>
-                          <SelectItem value="oceania">Oceanía</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div>
-                      <Label htmlFor="description">Descripción</Label>
-                      <Textarea
-                        id="description"
-                        value={newDeal.description}
-                        onChange={(e) => setNewDeal({...newDeal, description: e.target.value})}
-                        placeholder="Detalles adicionales sobre la oferta..."
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Destino</label>
+                      <Input
+                        value={newDeal.destination}
+                        onChange={(e) => setNewDeal({ ...newDeal, destination: e.target.value })}
+                        placeholder="Ej: París, Francia"
+                        required
                       />
                     </div>
-
-                    <Button type="submit" className="w-full">
-                      Publicar Oferta
-                    </Button>
-                  </form>
-                </CardContent>
-              </Card>
-
-              {/* Active Deals */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Ofertas Activas</CardTitle>
-                  <CardDescription>
-                    Gestiona las ofertas actualmente publicadas
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {deals.map((deal) => (
-                      <div key={deal.id} className="flex items-center justify-between p-4 border rounded-lg">
-                        <div className="flex-1">
-                          <h4 className="font-medium">{deal.title}</h4>
-                          <div className="text-sm text-gray-600">
-                            €{deal.originalPrice} → €{deal.dealPrice}
-                          </div>
-                          <div className="flex items-center gap-4 text-xs text-gray-500 mt-1">
-                            <span className="flex items-center gap-1">
-                              <Eye className="h-3 w-3" />
-                              {deal.views}
-                            </span>
-                            <span>{deal.clicks} clicks</span>
-                            <span>{deal.conversions} conversiones</span>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Badge className="bg-green-100 text-green-800">
-                            {deal.status}
-                          </Badge>
-                          <Button variant="ghost" size="sm">
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button variant="ghost" size="sm">
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
                   </div>
-                </CardContent>
-              </Card>
-            </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
+                    <Textarea
+                      value={newDeal.description}
+                      onChange={(e) => setNewDeal({ ...newDeal, description: e.target.value })}
+                      placeholder="Describe los detalles de la oferta..."
+                      rows={3}
+                      required
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Precio Oferta (€)</label>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        value={newDeal.price}
+                        onChange={(e) => setNewDeal({ ...newDeal, price: e.target.value })}
+                        placeholder="29.00"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Precio Original (€)</label>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        value={newDeal.originalPrice}
+                        onChange={(e) => setNewDeal({ ...newDeal, originalPrice: e.target.value })}
+                        placeholder="199.00"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Categoría</label>
+                      <select
+                        value={newDeal.category}
+                        onChange={(e) => setNewDeal({ ...newDeal, category: e.target.value as any })}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        required
+                      >
+                        <option value="flight">Vuelo</option>
+                        <option value="hotel">Hotel</option>
+                        <option value="insurance">Seguro</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Válido Hasta</label>
+                      <Input
+                        type="date"
+                        value={newDeal.validUntil}
+                        onChange={(e) => setNewDeal({ ...newDeal, validUntil: e.target.value })}
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <Button type="submit" className="w-full md:w-auto">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Crear Oferta
+                  </Button>
+                </form>
+              </CardContent>
+            </Card>
+
+            {/* Deals List */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Ofertas Activas</CardTitle>
+                <CardDescription>Gestiona todas las ofertas disponibles para los usuarios premium</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {deals.length === 0 ? (
+                    <div className="text-center py-8">
+                      <p className="text-gray-500">No hay ofertas disponibles</p>
+                      <p className="text-sm text-gray-400">Crea tu primera oferta usando el formulario de arriba</p>
+                    </div>
+                  ) : (
+                    deals.map((deal) => (
+                      <div key={deal.id} className="border rounded-lg p-4 hover:bg-gray-50">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-2">
+                              <Badge className={getCategoryColor(deal.category)}>
+                                <span className="flex items-center gap-1">
+                                  {getCategoryIcon(deal.category)}
+                                  {deal.category === "flight"
+                                    ? "Vuelo"
+                                    : deal.category === "hotel"
+                                      ? "Hotel"
+                                      : "Seguro"}
+                                </span>
+                              </Badge>
+                              <Badge variant={deal.isActive ? "default" : "secondary"}>
+                                {deal.isActive ? "Activa" : "Inactiva"}
+                              </Badge>
+                            </div>
+                            <h3 className="font-semibold text-lg">{deal.title}</h3>
+                            <p className="text-gray-600 mb-2">{deal.description}</p>
+                            <div className="flex items-center gap-4 text-sm text-gray-500">
+                              <span>📍 {deal.destination}</span>
+                              <span>
+                                💰 €{deal.price} (antes €{deal.originalPrice})
+                              </span>
+                              <span>⏰ Válido hasta {new Date(deal.validUntil).toLocaleDateString()}</span>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2 ml-4">
+                            <Button variant="outline" size="sm">
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                            <Button variant="outline" size="sm">
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleDeleteDeal(deal.id)}
+                              className="text-red-600 hover:text-red-700"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
 
-          {/* Users Management */}
+          {/* Users Tab */}
           <TabsContent value="users" className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>Gestión de Usuarios</CardTitle>
-                <CardDescription>
-                  Administra los miembros de la comunidad premium
-                </CardDescription>
+                <CardTitle>Usuarios y Suscripciones</CardTitle>
+                <CardDescription>Gestiona los usuarios registrados y sus suscripciones</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
                   {users.map((user) => (
-                    <div key={user.id} className="flex items-center justify-between p-4 border rounded-lg">
-                      <div className="flex-1">
-                        <h4 className="font-medium">{user.name}</h4>
-                        <p className="text-sm text-gray-600">{user.email}</p>
-                        <p className="text-xs text-gray-500">Miembro desde: {user.joinDate}</p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Badge className="bg-blue-100 text-blue-800">
-                          {user.subscription}
-                        </Badge>
-                        <Badge className="bg-green-100 text-green-800">
-                          {user.status}
-                        </Badge>
-                        <Button variant="ghost" size="sm">
-                          <Settings className="h-4 w-4" />
-                        </Button>
+                    <div key={user.id} className="border rounded-lg p-4 hover:bg-gray-50">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h3 className="font-semibold">{user.email}</h3>
+                          <div className="flex items-center gap-2 mt-1">
+                            <Badge variant={user.plan === "premium_plus" ? "default" : "secondary"}>
+                              {user.plan === "premium" ? "Premium" : "Premium Plus"}
+                            </Badge>
+                            <Badge variant={user.status === "active" ? "default" : "destructive"}>
+                              {user.status === "active"
+                                ? "Activo"
+                                : user.status === "cancelled"
+                                  ? "Cancelado"
+                                  : "Pago Pendiente"}
+                            </Badge>
+                          </div>
+                          <p className="text-sm text-gray-500 mt-1">
+                            Registrado: {new Date(user.createdAt).toLocaleDateString()} | Último pago:{" "}
+                            {new Date(user.lastPayment).toLocaleDateString()}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Button variant="outline" size="sm">
+                            Ver Detalles
+                          </Button>
+                          <Button variant="outline" size="sm">
+                            Enviar Email
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -375,126 +506,31 @@ export default function AdminPage() {
             </Card>
           </TabsContent>
 
-          {/* AI Settings */}
-          <TabsContent value="ai" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Bot className="h-5 w-5" />
-                  Configuración de IA
-                </CardTitle>
-                <CardDescription>
-                  Configura el sistema de detección automática de ofertas
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label htmlFor="ai-enabled">Sistema IA Activado</Label>
-                    <p className="text-sm text-gray-600">Habilita el rastreo automático de precios</p>
-                  </div>
-                  <Switch
-                    id="ai-enabled"
-                    checked={aiSettings.enabled}
-                    onCheckedChange={(checked) => setAiSettings({...aiSettings, enabled: checked})}
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="scan-interval">Intervalo de Escaneo (minutos)</Label>
-                  <Select value={aiSettings.scanInterval} onValueChange={(value) => setAiSettings({...aiSettings, scanInterval: value})}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="5">5 minutos</SelectItem>
-                      <SelectItem value="15">15 minutos</SelectItem>
-                      <SelectItem value="30">30 minutos</SelectItem>
-                      <SelectItem value="60">1 hora</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <Label htmlFor="price-threshold">Umbral de Descuento (%)</Label>
-                  <Input
-                    id="price-threshold"
-                    type="number"
-                    value={aiSettings.priceThreshold}
-                    onChange={(e) => setAiSettings({...aiSettings, priceThreshold: e.target.value})}
-                    placeholder="30"
-                  />
-                  <p className="text-sm text-gray-600 mt-1">
-                    Solo detectar ofertas con descuentos superiores a este porcentaje
-                  </p>
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label htmlFor="auto-publish">Publicación Automática</Label>
-                    <p className="text-sm text-gray-600">Publica ofertas automáticamente sin revisión manual</p>
-                  </div>
-                  <Switch
-                    id="auto-publish"
-                    checked={aiSettings.autoPublish}
-                    onCheckedChange={(checked) => setAiSettings({...aiSettings, autoPublish: checked})}
-                  />
-                </div>
-
-                <Button className="w-full">
-                  Guardar Configuración
-                </Button>
-              </CardContent>
-            </Card>
-
-            {/* AI Status */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Estado del Sistema IA</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="text-center p-4 bg-green-50 rounded-lg">
-                    <div className="text-2xl font-bold text-green-600">247</div>
-                    <div className="text-sm text-green-700">Ofertas Detectadas Hoy</div>
-                  </div>
-                  <div className="text-center p-4 bg-blue-50 rounded-lg">
-                    <div className="text-2xl font-bold text-blue-600">15</div>
-                    <div className="text-sm text-blue-700">Sitios Monitoreados</div>
-                  </div>
-                  <div className="text-center p-4 bg-purple-50 rounded-lg">
-                    <div className="text-2xl font-bold text-purple-600">98.5%</div>
-                    <div className="text-sm text-purple-700">Precisión IA</div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Analytics */}
+          {/* Analytics Tab */}
           <TabsContent value="analytics" className="space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <Card>
                 <CardHeader>
-                  <CardTitle>Rendimiento de Ofertas</CardTitle>
+                  <CardTitle>Ingresos por Plan</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
                     <div className="flex justify-between items-center">
-                      <span>Tasa de Conversión</span>
-                      <span className="font-bold text-green-600">12.4%</span>
+                      <span>Premium (€1.99/mes)</span>
+                      <span className="font-semibold">
+                        €{(users.filter((u) => u.plan === "premium").length * 1.99).toFixed(2)}
+                      </span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span>CTR Promedio</span>
-                      <span className="font-bold text-blue-600">7.2%</span>
+                      <span>Premium Plus (€2.49/mes)</span>
+                      <span className="font-semibold">
+                        €{(users.filter((u) => u.plan === "premium_plus").length * 2.49).toFixed(2)}
+                      </span>
                     </div>
-                    <div className="flex justify-between items-center">
-                      <span>Tiempo Promedio en Página</span>
-                      <span className="font-bold text-purple-600">3m 24s</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span>Ofertas más Populares</span>
-                      <span className="font-bold text-orange-600">Vuelos</span>
+                    <hr />
+                    <div className="flex justify-between items-center font-bold">
+                      <span>Total Mensual</span>
+                      <span>€{stats.monthlyRevenue.toFixed(2)}</span>
                     </div>
                   </div>
                 </CardContent>
@@ -502,27 +538,30 @@ export default function AdminPage() {
 
               <Card>
                 <CardHeader>
-                  <CardTitle>Ingresos por Mes</CardTitle>
+                  <CardTitle>Distribución de Ofertas</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
                     <div className="flex justify-between items-center">
-                      <span>Enero 2024</span>
-                      <span className="font-bold">€8,247</span>
+                      <span className="flex items-center gap-2">
+                        <Plane className="h-4 w-4" />
+                        Vuelos
+                      </span>
+                      <span className="font-semibold">{deals.filter((d) => d.category === "flight").length}</span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span>Febrero 2024</span>
-                      <span className="font-bold">€9,156</span>
+                      <span className="flex items-center gap-2">
+                        <Hotel className="h-4 w-4" />
+                        Hoteles
+                      </span>
+                      <span className="font-semibold">{deals.filter((d) => d.category === "hotel").length}</span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span>Marzo 2024</span>
-                      <span className="font-bold text-green-600">€10,441</span>
-                    </div>
-                    <div className="pt-4 border-t">
-                      <div className="flex justify-between items-center">
-                        <span className="font-semibold">Crecimiento Mensual</span>
-                        <span className="font-bold text-green-600">+14.1%</span>
-                      </div>
+                      <span className="flex items-center gap-2">
+                        <Shield className="h-4 w-4" />
+                        Seguros
+                      </span>
+                      <span className="font-semibold">{deals.filter((d) => d.category === "insurance").length}</span>
                     </div>
                   </div>
                 </CardContent>

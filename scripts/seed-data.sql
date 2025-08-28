@@ -1,86 +1,631 @@
--- Seed data for TravelDeals Pro
+-- =============================================================================
+-- TRAVELDEALS PRO - DATOS DE PRUEBA
+-- Digital Tsunami SL
+-- =============================================================================
 
--- Insert sample users
-INSERT INTO users (email, password_hash, first_name, last_name, preferred_airports, interested_continents) VALUES
-('juan.perez@email.com', '$2b$10$example_hash_1', 'Juan', 'Pérez', ARRAY['MAD', 'BCN'], ARRAY['Europa', 'América del Norte']),
-('maria.garcia@email.com', '$2b$10$example_hash_2', 'María', 'García', ARRAY['MAD', 'LHR'], ARRAY['Asia', 'Oceanía']),
-('carlos.lopez@email.com', '$2b$10$example_hash_3', 'Carlos', 'López', ARRAY['BCN', 'CDG'], ARRAY['Europa', 'África']),
-('ana.martinez@email.com', '$2b$10$example_hash_4', 'Ana', 'Martínez', ARRAY['MAD'], ARRAY['América del Sur', 'Asia']);
+-- Limpiar datos existentes (solo para desarrollo)
+-- TRUNCATE TABLE deal_clicks, deal_views, notifications, ai_extractions, user_preferences, deals, subscriptions, users, rss_sources, deal_categories RESTART IDENTITY CASCADE;
 
--- Insert sample flight deals
-INSERT INTO deals (
-    type, title, description, from_location, to_location, from_city, to_city,
-    original_price, deal_price, airline, travel_dates, deal_type, continent,
-    country, verified, active, expires_at, ai_detected, ai_confidence
+-- =============================================================================
+-- USUARIOS DE PRUEBA
+-- =============================================================================
+
+INSERT INTO users (id, email, name, created_at, preferences) VALUES
+(
+    '550e8400-e29b-41d4-a716-446655440001',
+    'admin@digitaltsunamis.com',
+    'Administrador',
+    NOW() - INTERVAL '30 days',
+    '{"role": "admin", "notifications": true}'
+),
+(
+    '550e8400-e29b-41d4-a716-446655440002',
+    'usuario1@example.com',
+    'María García',
+    NOW() - INTERVAL '15 days',
+    '{"departure_city": "Madrid", "preferred_destinations": ["París", "Roma", "Londres"]}'
+),
+(
+    '550e8400-e29b-41d4-a716-446655440003',
+    'usuario2@example.com',
+    'Carlos López',
+    NOW() - INTERVAL '10 days',
+    '{"departure_city": "Barcelona", "max_budget": 500}'
+),
+(
+    '550e8400-e29b-41d4-a716-446655440004',
+    'usuario3@example.com',
+    'Ana Martínez',
+    NOW() - INTERVAL '5 days',
+    '{"departure_city": "Valencia", "categories": ["hotel", "flight"]}'
+)
+ON CONFLICT (email) DO NOTHING;
+
+-- =============================================================================
+-- SUSCRIPCIONES DE PRUEBA
+-- =============================================================================
+
+INSERT INTO subscriptions (
+    id, user_id, stripe_customer_id, stripe_subscription_id, stripe_price_id,
+    plan_type, status, current_period_start, current_period_end
 ) VALUES
-('flight', 'Madrid → Nueva York', 'Vuelo directo con Iberia, incluye equipaje', 'MAD', 'JFK', 'Madrid', 'Nueva York', 
- 850.00, 299.00, 'Iberia', '15-22 Mar 2024', 'Error de Tarifa', 'América del Norte', 'Estados Unidos', 
- TRUE, TRUE, NOW() + INTERVAL '2 hours', TRUE, 0.95),
+(
+    '660e8400-e29b-41d4-a716-446655440001',
+    '550e8400-e29b-41d4-a716-446655440002',
+    'cus_test_customer_1',
+    'sub_test_subscription_1',
+    'price_premium_test',
+    'premium',
+    'active',
+    NOW() - INTERVAL '15 days',
+    NOW() + INTERVAL '15 days'
+),
+(
+    '660e8400-e29b-41d4-a716-446655440002',
+    '550e8400-e29b-41d4-a716-446655440003',
+    'cus_test_customer_2',
+    'sub_test_subscription_2',
+    'price_premium_plus_test',
+    'premium_plus',
+    'active',
+    NOW() - INTERVAL '10 days',
+    NOW() + INTERVAL '20 days'
+)
+ON CONFLICT (stripe_subscription_id) DO NOTHING;
 
-('flight', 'Barcelona → Bangkok', 'Vuelo con escala en Doha, Qatar Airways', 'BCN', 'BKK', 'Barcelona', 'Bangkok',
- 720.00, 385.00, 'Qatar Airways', '10-24 Abr 2024', 'Oferta Flash', 'Asia', 'Tailandia',
- TRUE, TRUE, NOW() + INTERVAL '5 hours', TRUE, 0.88),
+-- =============================================================================
+-- CATEGORÍAS DE OFERTAS
+-- =============================================================================
 
-('flight', 'Madrid → Sídney', 'Vuelo con Emirates, dos escalas', 'MAD', 'SYD', 'Madrid', 'Sídney',
- 1200.00, 699.00, 'Emirates', '5-19 May 2024', 'Precio Especial', 'Oceanía', 'Australia',
- TRUE, TRUE, NOW() + INTERVAL '1 hour', FALSE, NULL),
+INSERT INTO deal_categories (id, name, slug, description, icon, color, sort_order) VALUES
+(
+    '770e8400-e29b-41d4-a716-446655440001',
+    'Vuelos',
+    'flights',
+    'Ofertas de vuelos nacionales e internacionales con los mejores precios',
+    'plane',
+    '#3B82F6',
+    1
+),
+(
+    '770e8400-e29b-41d4-a716-446655440002',
+    'Hoteles',
+    'hotels',
+    'Alojamientos y resorts con descuentos especiales',
+    'hotel',
+    '#10B981',
+    2
+),
+(
+    '770e8400-e29b-41d4-a716-446655440003',
+    'Seguros',
+    'insurance',
+    'Seguros de viaje y asistencia médica internacional',
+    'shield',
+    '#8B5CF6',
+    3
+),
+(
+    '770e8400-e29b-41d4-a716-446655440004',
+    'Paquetes',
+    'packages',
+    'Paquetes completos de viaje con vuelo + hotel',
+    'package',
+    '#F59E0B',
+    4
+)
+ON CONFLICT (slug) DO NOTHING;
 
-('flight', 'Barcelona → Tokio', 'Vuelo directo con ANA', 'BCN', 'NRT', 'Barcelona', 'Tokio',
- 950.00, 420.00, 'ANA', '1-15 Jun 2024', 'Error de Tarifa', 'Asia', 'Japón',
- TRUE, TRUE, NOW() + INTERVAL '3 hours', TRUE, 0.92);
+-- =============================================================================
+-- OFERTAS DE PRUEBA
+-- =============================================================================
 
--- Insert sample hotel deals
 INSERT INTO deals (
-    type, title, description, to_city, original_price, deal_price,
-    hotel_name, travel_dates, deal_type, continent, country,
-    verified, active, expires_at, ai_detected, ai_confidence
+    id, title, description, price, original_price, category, destination,
+    departure_location, valid_until, is_active, is_featured, image_url,
+    external_url, source, created_by, view_count, click_count
 ) VALUES
-('hotel', 'Hotel Luxury Palace - París', 'Hotel 5 estrellas en el centro de París, desayuno incluido', 'París',
- 320.00, 89.00, 'Hotel Luxury Palace', '20-25 Mar 2024', 'Última Hora', 'Europa', 'Francia',
- TRUE, TRUE, NOW() + INTERVAL '6 hours', TRUE, 0.91),
+-- Vuelos
+(
+    '880e8400-e29b-41d4-a716-446655440001',
+    'Vuelo Madrid-París desde €29',
+    'Vuelo directo con Vueling. Fechas flexibles en marzo y abril. Equipaje de mano incluido. Reserva hasta 24h antes del vuelo.',
+    29.00,
+    199.00,
+    'flight',
+    'París, Francia',
+    'Madrid, España',
+    NOW() + INTERVAL '45 days',
+    true,
+    true,
+    '/paris-eiffel-tower.png',
+    'https://www.vueling.com',
+    'Vueling',
+    '550e8400-e29b-41d4-a716-446655440001',
+    1250,
+    89
+),
+(
+    '880e8400-e29b-41d4-a716-446655440002',
+    'Barcelona-Roma ida y vuelta €45',
+    'Vuelos con Ryanair. Válido para viajes en mayo y junio. Sin equipaje facturado.',
+    45.00,
+    180.00,
+    'flight',
+    'Roma, Italia',
+    'Barcelona, España',
+    NOW() + INTERVAL '60 days',
+    true,
+    false,
+    '/rome-colosseum.png',
+    'https://www.ryanair.com',
+    'Ryanair',
+    '550e8400-e29b-41d4-a716-446655440001',
+    890,
+    67
+),
+(
+    '880e8400-e29b-41d4-a716-446655440003',
+    'Madrid-Londres desde €39',
+    'British Airways. Vuelos directos disponibles todo el año. Incluye comida y bebida.',
+    39.00,
+    220.00,
+    'flight',
+    'Londres, Reino Unido',
+    'Madrid, España',
+    NOW() + INTERVAL '90 days',
+    true,
+    true,
+    '/placeholder.svg?height=200&width=300',
+    'https://www.britishairways.com',
+    'British Airways',
+    '550e8400-e29b-41d4-a716-446655440001',
+    2100,
+    156
+),
 
-('hotel', 'Beachfront Resort - Cancún', 'Resort todo incluido frente al mar', 'Cancún',
- 450.00, 159.00, 'Beachfront Resort', '12-18 Abr 2024', 'Todo Incluido', 'América del Norte', 'México',
- TRUE, TRUE, NOW() + INTERVAL '4 hours', TRUE, 0.87),
+-- Hoteles
+(
+    '880e8400-e29b-41d4-a716-446655440004',
+    'Hotel 5* en Roma desde €45/noche',
+    'Hotel de lujo en el centro histórico. Desayuno incluido y cancelación gratuita hasta 24h antes. WiFi gratis y spa.',
+    45.00,
+    180.00,
+    'hotel',
+    'Roma, Italia',
+    NULL,
+    NOW() + INTERVAL '75 days',
+    true,
+    true,
+    '/rome-colosseum.png',
+    'https://www.booking.com',
+    'Booking.com',
+    '550e8400-e29b-41d4-a716-446655440001',
+    1680,
+    234
+),
+(
+    '880e8400-e29b-41d4-a716-446655440005',
+    'Resort Todo Incluido Cancún desde €299',
+    '7 noches en resort 5* frente al mar. Todo incluido con bebidas premium. Actividades acuáticas incluidas.',
+    299.00,
+    899.00,
+    'hotel',
+    'Cancún, México',
+    NULL,
+    NOW() + INTERVAL '120 days',
+    true,
+    true,
+    '/cancun-beach-resort.png',
+    'https://www.expedia.com',
+    'Expedia',
+    '550e8400-e29b-41d4-a716-446655440001',
+    3200,
+    445
+),
+(
+    '880e8400-e29b-41d4-a716-446655440006',
+    'Hotel Boutique París €89/noche',
+    'Hotel boutique en Montmartre. Vistas a la Torre Eiffel. Desayuno continental incluido.',
+    89.00,
+    250.00,
+    'hotel',
+    'París, Francia',
+    NULL,
+    NOW() + INTERVAL '50 days',
+    true,
+    false,
+    '/paris-eiffel-tower.png',
+    'https://www.hotels.com',
+    'Hotels.com',
+    '550e8400-e29b-41d4-a716-446655440001',
+    756,
+    98
+),
 
-('hotel', 'Mountain Lodge - Suiza', 'Lodge de montaña con spa incluido', 'Zermatt',
- 280.00, 125.00, 'Alpine Mountain Lodge', '8-15 May 2024', 'Oferta Especial', 'Europa', 'Suiza',
- TRUE, TRUE, NOW() + INTERVAL '8 hours', FALSE, NULL);
+-- Seguros
+(
+    '880e8400-e29b-41d4-a716-446655440007',
+    'Seguro de viaje anual desde €19',
+    'Cobertura mundial con asistencia 24/7. Incluye COVID-19 y deportes de aventura. Cancelación de viaje incluida.',
+    19.00,
+    89.00,
+    'insurance',
+    'Mundial',
+    NULL,
+    NOW() + INTERVAL '365 days',
+    true,
+    false,
+    '/placeholder.svg?height=200&width=300',
+    'https://www.intermundial.es',
+    'InterMundial',
+    '550e8400-e29b-41d4-a716-446655440001',
+    445,
+    67
+),
+(
+    '880e8400-e29b-41d4-a716-446655440008',
+    'Seguro Premium Europa €35',
+    'Cobertura completa para Europa. Gastos médicos hasta 300.000€. Deportes de invierno incluidos.',
+    35.00,
+    120.00,
+    'insurance',
+    'Europa',
+    NULL,
+    NOW() + INTERVAL '180 days',
+    true,
+    false,
+    '/placeholder.svg?height=200&width=300',
+    'https://www.axa-assistance.es',
+    'AXA',
+    '550e8400-e29b-41d4-a716-446655440001',
+    234,
+    34
+),
 
--- Insert sample payments
-INSERT INTO payments (user_id, amount, currency, payment_method, transaction_id, status, payment_date) VALUES
-(1, 1.99, 'EUR', 'card', 'txn_1234567890', 'completed', NOW() - INTERVAL '30 days'),
-(2, 1.99, 'EUR', 'paypal', 'txn_1234567891', 'completed', NOW() - INTERVAL '25 days'),
-(3, 1.99, 'EUR', 'card', 'txn_1234567892', 'completed', NOW() - INTERVAL '20 days'),
-(4, 1.99, 'EUR', 'card', 'txn_1234567893', 'completed', NOW() - INTERVAL '15 days');
+-- Ofertas adicionales
+(
+    '880e8400-e29b-41d4-a716-446655440009',
+    'Vuelo Madrid-Nueva York €199',
+    'Vuelo directo con Iberia. Temporada baja. Equipaje facturado incluido.',
+    199.00,
+    650.00,
+    'flight',
+    'Nueva York, Estados Unidos',
+    'Madrid, España',
+    NOW() + INTERVAL '30 days',
+    true,
+    true,
+    '/placeholder.svg?height=200&width=300',
+    'https://www.iberia.com',
+    'Iberia',
+    '550e8400-e29b-41d4-a716-446655440001',
+    4500,
+    567
+),
+(
+    '880e8400-e29b-41d4-a716-446655440010',
+    'Hotel Bali 4* desde €65/noche',
+    'Resort en primera línea de playa. Piscina infinita y spa. Desayuno buffet incluido.',
+    65.00,
+    180.00,
+    'hotel',
+    'Bali, Indonesia',
+    NULL,
+    NOW() + INTERVAL '100 days',
+    true,
+    false,
+    '/placeholder.svg?height=200&width=300',
+    'https://www.agoda.com',
+    'Agoda',
+    '550e8400-e29b-41d4-a716-446655440001',
+    1890,
+    234
+)
+ON CONFLICT (id) DO NOTHING;
 
--- Insert sample deal interactions
-INSERT INTO deal_interactions (user_id, deal_id, interaction_type) VALUES
-(1, 1, 'view'), (1, 1, 'click'), (1, 1, 'conversion'),
-(1, 2, 'view'), (1, 3, 'view'),
-(2, 1, 'view'), (2, 1, 'click'),
-(2, 2, 'view'), (2, 2, 'click'), (2, 2, 'conversion'),
-(3, 1, 'view'), (3, 2, 'view'), (3, 3, 'view'), (3, 3, 'click'),
-(4, 1, 'view'), (4, 4, 'view'), (4, 4, 'click'), (4, 4, 'conversion');
+-- =============================================================================
+-- PREFERENCIAS DE USUARIOS
+-- =============================================================================
 
--- Insert sample AI scan logs
-INSERT INTO ai_scan_logs (scan_type, source_website, deals_found, scan_duration_seconds, status) VALUES
-('flight_scan', 'skyscanner.com', 15, 45, 'completed'),
-('hotel_scan', 'booking.com', 23, 67, 'completed'),
-('flight_scan', 'kayak.com', 8, 32, 'completed'),
-('hotel_scan', 'expedia.com', 12, 41, 'completed'),
-('flight_scan', 'momondo.com', 19, 58, 'completed');
+INSERT INTO user_preferences (
+    id, user_id, departure_airports, preferred_destinations, max_price,
+    categories, email_notifications, telegram_notifications
+) VALUES
+(
+    '990e8400-e29b-41d4-a716-446655440001',
+    '550e8400-e29b-41d4-a716-446655440002',
+    ARRAY['MAD', 'BCN'],
+    ARRAY['París', 'Roma', 'Londres', 'Ámsterdam'],
+    300.00,
+    ARRAY['flight', 'hotel'],
+    true,
+    false
+),
+(
+    '990e8400-e29b-41d4-a716-446655440002',
+    '550e8400-e29b-41d4-a716-446655440003',
+    ARRAY['BCN', 'VLC'],
+    ARRAY['Tokio', 'Bangkok', 'Singapur'],
+    500.00,
+    ARRAY['flight', 'hotel', 'insurance'],
+    true,
+    true
+),
+(
+    '990e8400-e29b-41d4-a716-446655440003',
+    '550e8400-e29b-41d4-a716-446655440004',
+    ARRAY['VLC', 'SVQ'],
+    ARRAY['Nueva York', 'Los Ángeles', 'Miami'],
+    800.00,
+    ARRAY['flight'],
+    false,
+    false
+)
+ON CONFLICT (id) DO NOTHING;
 
--- Insert sample user alerts
-INSERT INTO user_alerts (user_id, alert_type, title, message, deal_id) VALUES
-(1, 'new_deal', 'Nueva oferta desde Madrid', 'Hemos encontrado una nueva oferta de vuelo desde tu aeropuerto preferido', 1),
-(1, 'price_drop', 'Bajada de precio', 'El precio del vuelo Madrid-NYC ha bajado €50 más', 1),
-(2, 'new_deal', 'Oferta en Asia', 'Nueva oferta de vuelo a Bangkok desde Barcelona', 2),
-(3, 'expiring_soon', 'Oferta expira pronto', 'La oferta Madrid-Sídney expira en 1 hora', 3),
-(4, 'new_deal', 'Oferta de hotel', 'Nuevo hotel con descuento en París', 5);
+-- =============================================================================
+-- FUENTES RSS
+-- =============================================================================
 
--- Update deal statistics based on interactions
-UPDATE deals SET 
-    views_count = (SELECT COUNT(*) FROM deal_interactions WHERE deal_id = deals.id AND interaction_type = 'view'),
-    clicks_count = (SELECT COUNT(*) FROM deal_interactions WHERE deal_id = deals.id AND interaction_type = 'click'),
-    conversions_count = (SELECT COUNT(*) FROM deal_interactions WHERE deal_id = deals.id AND interaction_type = 'conversion');
+INSERT INTO rss_sources (
+    id, name, url, category, is_active, fetch_interval, last_fetched
+) VALUES
+(
+    'aa0e8400-e29b-41d4-a716-446655440001',
+    'Chollos Viajes',
+    'https://www.chollometro.com/rss/grupo/viajes',
+    'flight',
+    true,
+    3600,
+    NOW() - INTERVAL '2 hours'
+),
+(
+    'aa0e8400-e29b-41d4-a716-446655440002',
+    'Viajes Piratas',
+    'https://www.viajespirata.com/feed/',
+    'flight',
+    true,
+    3600,
+    NOW() - INTERVAL '1 hour'
+),
+(
+    'aa0e8400-e29b-41d4-a716-446655440003',
+    'Logitravel Ofertas',
+    'https://www.logitravel.com/rss/ofertas.xml',
+    'hotel',
+    true,
+    7200,
+    NOW() - INTERVAL '3 hours'
+),
+(
+    'aa0e8400-e29b-41d4-a716-446655440004',
+    'Destinia Flash',
+    'https://www.destinia.com/rss/ofertas-flash.xml',
+    'hotel',
+    false,
+    3600,
+    NULL
+)
+ON CONFLICT (url) DO NOTHING;
+
+-- =============================================================================
+-- VISUALIZACIONES Y CLICKS DE PRUEBA
+-- =============================================================================
+
+-- Generar algunas visualizaciones
+INSERT INTO deal_views (deal_id, user_id, ip_address, created_at)
+SELECT 
+    d.id,
+    (ARRAY['550e8400-e29b-41d4-a716-446655440002', '550e8400-e29b-41d4-a716-446655440003', '550e8400-e29b-41d4-a716-446655440004', NULL])[floor(random() * 4 + 1)::int]::uuid,
+    ('192.168.1.' || floor(random() * 255 + 1)::text)::inet,
+    NOW() - (random() * INTERVAL '30 days')
+FROM deals d, generate_series(1, 10) -- 10 visualizaciones por oferta
+WHERE d.is_active = true;
+
+-- Generar algunos clicks (menos que visualizaciones)
+INSERT INTO deal_clicks (deal_id, user_id, ip_address, created_at)
+SELECT 
+    d.id,
+    (ARRAY['550e8400-e29b-41d4-a716-446655440002', '550e8400-e29b-41d4-a716-446655440003', '550e8400-e29b-41d4-a716-446655440004', NULL])[floor(random() * 4 + 1)::int]::uuid,
+    ('192.168.1.' || floor(random() * 255 + 1)::text)::inet,
+    NOW() - (random() * INTERVAL '30 days')
+FROM deals d, generate_series(1, 3) -- 3 clicks por oferta
+WHERE d.is_active = true;
+
+-- =============================================================================
+-- NOTIFICACIONES DE PRUEBA
+-- =============================================================================
+
+INSERT INTO notifications (
+    id, user_id, type, title, message, data, is_read, created_at
+) VALUES
+(
+    'bb0e8400-e29b-41d4-a716-446655440001',
+    '550e8400-e29b-41d4-a716-446655440002',
+    'deal_alert',
+    '¡Nueva oferta para París!',
+    'Hemos encontrado un vuelo Madrid-París por solo €29. ¡No te lo pierdas!',
+    '{"deal_id": "880e8400-e29b-41d4-a716-446655440001", "price": 29, "destination": "París"}',
+    false,
+    NOW() - INTERVAL '2 hours'
+),
+(
+    'bb0e8400-e29b-41d4-a716-446655440002',
+    '550e8400-e29b-41d4-a716-446655440003',
+    'subscription',
+    'Bienvenido a Premium Plus',
+    'Tu suscripción Premium Plus está activa. Disfruta de todas las ventajas.',
+    '{"plan": "premium_plus", "benefits": ["alertas_personalizadas", "soporte_prioritario"]}',
+    true,
+    NOW() - INTERVAL '10 days'
+),
+(
+    'bb0e8400-e29b-41d4-a716-446655440003',
+    '550e8400-e29b-41d4-a716-446655440004',
+    'system',
+    'Actualización de la plataforma',
+    'Hemos añadido nuevas funcionalidades para mejorar tu experiencia.',
+    '{"version": "2.1.0", "features": ["mejor_busqueda", "notificaciones_push"]}',
+    false,
+    NOW() - INTERVAL '5 days'
+)
+ON CONFLICT (id) DO NOTHING;
+
+-- =============================================================================
+-- EXTRACCIONES DE IA DE PRUEBA
+-- =============================================================================
+
+INSERT INTO ai_extractions (
+    id, source_url, content_hash, extracted_data, confidence_score,
+    model_used, processing_time, success, created_at
+) VALUES
+(
+    'cc0e8400-e29b-41d4-a716-446655440001',
+    'https://www.example-travel-site.com/deal/123',
+    'a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0u1v2w3x4y5z6',
+    '{
+        "offers": [
+            {
+                "title": "Vuelo Madrid-París €29",
+                "price": 29,
+                "originalPrice": 199,
+                "destination": "París",
+                "category": "flight",
+                "validUntil": "2024-04-30"
+            }
+        ],
+        "confidence": 0.95
+    }',
+    0.95,
+    'gpt-4o',
+    1250,
+    true,
+    NOW() - INTERVAL '1 day'
+),
+(
+    'cc0e8400-e29b-41d4-a716-446655440002',
+    'https://www.another-travel-site.com/hotel/456',
+    'z9y8x7w6v5u4t3s2r1q0p9o8n7m6l5k4j3i2h1g0f9e8d7c6b5a4',
+    '{
+        "offers": [
+            {
+                "title": "Hotel Roma 5* €45/noche",
+                "price": 45,
+                "originalPrice": 180,
+                "destination": "Roma",
+                "category": "hotel",
+                "validUntil": "2024-05-15"
+            }
+        ],
+        "confidence": 0.88
+    }',
+    0.88,
+    'gpt-4o',
+    980,
+    true,
+    NOW() - INTERVAL '6 hours'
+)
+ON CONFLICT (id) DO NOTHING;
+
+-- =============================================================================
+-- EVENTOS DE WEBHOOK DE PRUEBA
+-- =============================================================================
+
+INSERT INTO webhook_events (
+    id, source, event_type, event_id, data, processed, processed_at
+) VALUES
+(
+    'dd0e8400-e29b-41d4-a716-446655440001',
+    'stripe',
+    'customer.subscription.created',
+    'evt_test_webhook_001',
+    '{
+        "id": "sub_test_subscription_1",
+        "customer": "cus_test_customer_1",
+        "status": "active",
+        "items": {
+            "data": [
+                {
+                    "price": {
+                        "id": "price_premium_test",
+                        "unit_amount": 199
+                    }
+                }
+            ]
+        }
+    }',
+    true,
+    NOW() - INTERVAL '15 days'
+),
+(
+    'dd0e8400-e29b-41d4-a716-446655440002',
+    'stripe',
+    'customer.subscription.updated',
+    'evt_test_webhook_002',
+    '{
+        "id": "sub_test_subscription_2",
+        "customer": "cus_test_customer_2",
+        "status": "active",
+        "cancel_at_period_end": false
+    }',
+    true,
+    NOW() - INTERVAL '5 days'
+)
+ON CONFLICT (event_id) DO NOTHING;
+
+-- =============================================================================
+-- VERIFICACIÓN DE DATOS INSERTADOS
+-- =============================================================================
+
+-- Mostrar resumen de datos insertados
+SELECT 
+    'users' as tabla, COUNT(*) as registros FROM users
+UNION ALL
+SELECT 
+    'subscriptions' as tabla, COUNT(*) as registros FROM subscriptions
+UNION ALL
+SELECT 
+    'deals' as tabla, COUNT(*) as registros FROM deals
+UNION ALL
+SELECT 
+    'deal_categories' as tabla, COUNT(*) as registros FROM deal_categories
+UNION ALL
+SELECT 
+    'user_preferences' as tabla, COUNT(*) as registros FROM user_preferences
+UNION ALL
+SELECT 
+    'deal_views' as tabla, COUNT(*) as registros FROM deal_views
+UNION ALL
+SELECT 
+    'deal_clicks' as tabla, COUNT(*) as registros FROM deal_clicks
+UNION ALL
+SELECT 
+    'rss_sources' as tabla, COUNT(*) as registros FROM rss_sources
+UNION ALL
+SELECT 
+    'notifications' as tabla, COUNT(*) as registros FROM notifications
+UNION ALL
+SELECT 
+    'ai_extractions' as tabla, COUNT(*) as registros FROM ai_extractions
+UNION ALL
+SELECT 
+    'webhook_events' as tabla, COUNT(*) as registros FROM webhook_events
+ORDER BY tabla;
+
+-- Mostrar estadísticas de ofertas
+SELECT 
+    category,
+    COUNT(*) as total_ofertas,
+    AVG(price) as precio_promedio,
+    AVG(discount_percentage) as descuento_promedio,
+    SUM(view_count) as visualizaciones_totales,
+    SUM(click_count) as clicks_totales
+FROM deals 
+WHERE is_active = true
+GROUP BY category
+ORDER BY total_ofertas DESC;
+
+-- =============================================================================
+-- FIN DEL SCRIPT DE DATOS DE PRUEBA
+-- =============================================================================

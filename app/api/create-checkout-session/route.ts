@@ -7,23 +7,36 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 
 export async function POST(request: NextRequest) {
   try {
-    const { priceId, email, successUrl, cancelUrl } = await request.json()
+    const { plan, billing, successUrl, cancelUrl } = await request.json()
 
+    console.log("🚀 Creating checkout session for plan:", plan, "billing:", billing)
+
+    // Verificar que tenemos las claves de Stripe
     if (!process.env.STRIPE_SECRET_KEY) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: "Stripe no configurado",
-        },
-        { status: 500 },
-      )
+      console.error("❌ STRIPE_SECRET_KEY not found")
+      return NextResponse.json({ error: "Stripe no configurado" }, { status: 500 })
     }
 
-    if (!priceId) {
+    // Mapear planes a Price IDs
+    const priceIds = {
+      premium: process.env.STRIPE_PREMIUM_PRICE_ID,
+      premium_plus: process.env.STRIPE_PREMIUM_PLUS_PRICE_ID,
+    }
+
+    const priceId = priceIds[plan as keyof typeof priceIds]
+
+    console.log("💰 Using price ID:", priceId)
+
+    if (!priceId || priceId.includes("tu_price_id")) {
+      console.error("❌ Invalid price ID:", priceId)
       return NextResponse.json(
         {
-          success: false,
-          message: "Price ID requerido",
+          error: "Price ID no configurado correctamente. Ve a Stripe Dashboard y configura los productos.",
+          debug: {
+            plan,
+            priceId,
+            allPriceIds: priceIds,
+          },
         },
         { status: 400 },
       )
@@ -39,32 +52,25 @@ export async function POST(request: NextRequest) {
           quantity: 1,
         },
       ],
-      customer_email: email,
       success_url: successUrl || `${process.env.NEXT_PUBLIC_BASE_URL}/dashboard?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: cancelUrl || `${process.env.NEXT_PUBLIC_BASE_URL}/pricing`,
+      allow_promotion_codes: true,
+      billing_address_collection: "required",
+      customer_creation: "always",
       metadata: {
-        email: email || "",
-        plan: priceId.includes("premium_plus") ? "premium_plus" : "premium",
-      },
-      subscription_data: {
-        metadata: {
-          email: email || "",
-          plan: priceId.includes("premium_plus") ? "premium_plus" : "premium",
-        },
+        plan,
+        billing,
       },
     })
 
-    return NextResponse.json({
-      success: true,
-      sessionId: session.id,
-      url: session.url,
-    })
+    console.log("✅ Checkout session created:", session.id)
+    return NextResponse.json({ url: session.url })
   } catch (error) {
-    console.error("Checkout session error:", error)
+    console.error("❌ Error creating checkout session:", error)
     return NextResponse.json(
       {
-        success: false,
-        message: error instanceof Error ? error.message : "Error creando sesión de pago",
+        error: "Error interno del servidor",
+        details: error instanceof Error ? error.message : "Unknown error",
       },
       { status: 500 },
     )
@@ -76,8 +82,13 @@ export async function GET() {
     success: true,
     message: "Endpoint de creación de sesiones de checkout",
     methods: ["POST"],
-    requiredFields: ["priceId"],
-    optionalFields: ["email", "successUrl", "cancelUrl"],
+    requiredFields: ["plan"],
+    optionalFields: ["billing", "successUrl", "cancelUrl"],
+    stripeConfigured: !!process.env.STRIPE_SECRET_KEY,
+    priceIds: {
+      premium: process.env.STRIPE_PREMIUM_PRICE_ID ? "configured" : "missing",
+      premium_plus: process.env.STRIPE_PREMIUM_PLUS_PRICE_ID ? "configured" : "missing",
+    },
     timestamp: new Date().toISOString(),
   })
 }

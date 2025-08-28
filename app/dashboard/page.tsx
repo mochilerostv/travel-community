@@ -1,432 +1,216 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useEffect, useState } from "react"
+import { useSearchParams } from "next/navigation"
+import Link from "next/link"
+import { Plane, CheckCircle, ArrowLeft, Calendar, MapPin, DollarSign } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Plane, Hotel, MapPin, Clock, TrendingDown, Bell, Filter, ExternalLink, Star, Users, Calendar, Euro } from 'lucide-react'
 
 export default function DashboardPage() {
-  const [selectedContinent, setSelectedContinent] = useState("all")
-  const [selectedAirport, setSelectedAirport] = useState("all")
+  const searchParams = useSearchParams()
+  const sessionId = searchParams.get("session_id")
+  const [paymentStatus, setPaymentStatus] = useState<"loading" | "success" | "error" | null>(null)
 
   useEffect(() => {
-    const checkSubscriptionStatus = async () => {
-      const urlParams = new URLSearchParams(window.location.search)
-      const sessionId = urlParams.get('session_id')
-      
-      if (sessionId) {
-        try {
-          const response = await fetch(`/api/subscription-status?session_id=${sessionId}`)
-          const data = await response.json()
-          
-          if (data.success) {
-            // Show success message
-            console.log('Subscription activated:', data.data)
-            // You could show a toast notification here
-          }
-        } catch (error) {
-          console.error('Error checking subscription:', error)
-        }
-      }
+    if (sessionId) {
+      setPaymentStatus("loading")
+      // Simular verificación de pago
+      setTimeout(() => {
+        setPaymentStatus("success")
+      }, 2000)
     }
-    
-    checkSubscriptionStatus()
-  }, [])
+  }, [sessionId])
 
-  const flightDeals = [
+  const mockDeals = [
     {
       id: 1,
-      from: "MAD",
-      to: "NYC",
-      fromCity: "Madrid",
-      toCity: "Nueva York",
-      originalPrice: 850,
-      dealPrice: 299,
-      savings: 551,
-      airline: "Iberia",
+      title: "Madrid → París",
+      price: "€89",
+      originalPrice: "€245",
+      savings: "64%",
       dates: "15-22 Mar",
-      type: "Error de Tarifa",
-      continent: "América del Norte",
+      type: "Error de tarifa",
+      airline: "Air France",
       verified: true,
-      timeLeft: "2h 15m"
     },
     {
       id: 2,
-      from: "BCN",
-      to: "BKK",
-      fromCity: "Barcelona",
-      toCity: "Bangkok",
-      originalPrice: 720,
-      dealPrice: 385,
-      savings: 335,
-      airline: "Qatar Airways",
-      dates: "10-24 Abr",
-      type: "Oferta Flash",
-      continent: "Asia",
+      title: "Barcelona → Roma",
+      price: "€45",
+      originalPrice: "€180",
+      savings: "75%",
+      dates: "8-15 Abr",
+      type: "Chollo verificado",
+      airline: "Ryanair",
       verified: true,
-      timeLeft: "5h 42m"
     },
     {
       id: 3,
-      from: "MAD",
-      to: "SYD",
-      fromCity: "Madrid",
-      toCity: "Sídney",
-      originalPrice: 1200,
-      dealPrice: 699,
-      savings: 501,
-      airline: "Emirates",
-      dates: "5-19 May",
-      type: "Precio Especial",
-      continent: "Oceanía",
+      title: "Valencia → Londres",
+      price: "€67",
+      originalPrice: "€220",
+      savings: "70%",
+      dates: "22-29 Mar",
+      type: "Error de tarifa",
+      airline: "British Airways",
       verified: true,
-      timeLeft: "1h 28m"
-    }
-  ]
-
-  const hotelDeals = [
-    {
-      id: 1,
-      name: "Hotel Luxury Palace",
-      city: "París",
-      country: "Francia",
-      originalPrice: 320,
-      dealPrice: 89,
-      savings: 231,
-      rating: 4.8,
-      dates: "20-25 Mar",
-      type: "Última Hora",
-      continent: "Europa",
-      image: "/luxury-hotel-paris.png"
     },
-    {
-      id: 2,
-      name: "Beachfront Resort",
-      city: "Cancún",
-      country: "México",
-      originalPrice: 450,
-      dealPrice: 159,
-      savings: 291,
-      rating: 4.6,
-      dates: "12-18 Abr",
-      type: "Todo Incluido",
-      continent: "América del Norte",
-      image: "/cancun-beach-resort.png"
-    }
   ]
-
-  const continents = ["Europa", "América del Norte", "América del Sur", "Asia", "África", "Oceanía"]
-  const airports = ["MAD", "BCN", "LHR", "CDG", "FCO", "AMS"]
-
-  const filteredFlightDeals = flightDeals.filter(deal => {
-    const continentMatch = selectedContinent === "all" || deal.continent === selectedContinent
-    const airportMatch = selectedAirport === "all" || deal.from === selectedAirport
-    return continentMatch && airportMatch
-  })
-
-  const filteredHotelDeals = hotelDeals.filter(deal => {
-    return selectedContinent === "all" || deal.continent === selectedContinent
-  })
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white border-b sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2">
-                <Plane className="h-8 w-8 text-blue-600" />
-                <h1 className="text-2xl font-bold text-gray-900">TravelDeals Pro</h1>
-              </div>
-              <Badge className="bg-green-100 text-green-800">
-                Miembro Premium
-              </Badge>
-            </div>
-            <div className="flex items-center gap-4">
-              <Button 
-                variant="ghost" 
-                size="sm"
-                onClick={() => window.open('/api/customer-portal', '_blank')}
-              >
-                Gestionar Suscripción
-              </Button>
-              <Button variant="ghost" size="sm">
-                <Bell className="h-4 w-4" />
-              </Button>
-              <Avatar>
-                <AvatarImage src="/placeholder-user.jpg" />
-                <AvatarFallback>JD</AvatarFallback>
-              </Avatar>
-            </div>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8 px-4">
+      <div className="container mx-auto max-w-6xl">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center gap-2">
+            <Plane className="h-8 w-8 text-blue-600" />
+            <h1 className="text-2xl font-bold text-gray-900">TravelDeals Pro</h1>
           </div>
-        </div>
-      </header>
-
-      <div className="container mx-auto px-4 py-8">
-        {/* Stats Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600">Ofertas Activas</p>
-                  <p className="text-2xl font-bold text-blue-600">247</p>
-                </div>
-                <TrendingDown className="h-8 w-8 text-blue-600" />
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600">Ahorro Total</p>
-                  <p className="text-2xl font-bold text-green-600">€2,847</p>
-                </div>
-                <Euro className="h-8 w-8 text-green-600" />
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600">Alertas Configuradas</p>
-                  <p className="text-2xl font-bold text-orange-600">12</p>
-                </div>
-                <Bell className="h-8 w-8 text-orange-600" />
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600">Miembros Online</p>
-                  <p className="text-2xl font-bold text-purple-600">1,247</p>
-                </div>
-                <Users className="h-8 w-8 text-purple-600" />
-              </div>
-            </CardContent>
-          </Card>
+          <Link href="/" className="text-blue-600 hover:text-blue-700">
+            <ArrowLeft className="h-5 w-5" />
+          </Link>
         </div>
 
-        {/* Filters */}
+        {/* Payment Success Message */}
+        {sessionId && (
+          <Card className="mb-8 border-green-200 bg-green-50">
+            <CardContent className="p-6">
+              <div className="flex items-center gap-3">
+                {paymentStatus === "loading" && (
+                  <>
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-green-600"></div>
+                    <div>
+                      <h3 className="font-semibold text-green-800">Verificando pago...</h3>
+                      <p className="text-green-700">Confirmando tu suscripción</p>
+                    </div>
+                  </>
+                )}
+                {paymentStatus === "success" && (
+                  <>
+                    <CheckCircle className="h-6 w-6 text-green-600" />
+                    <div>
+                      <h3 className="font-semibold text-green-800">¡Pago completado!</h3>
+                      <p className="text-green-700">Tu suscripción está activa. Bienvenido a TravelDeals Pro.</p>
+                    </div>
+                  </>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Welcome Section */}
+        <div className="text-center mb-8">
+          <h2 className="text-4xl font-bold text-gray-900 mb-2">Panel de Control</h2>
+          <p className="text-gray-600">Descubre las mejores ofertas detectadas por nuestra IA</p>
+        </div>
+
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Ofertas Activas</CardTitle>
+              <MapPin className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">127</div>
+              <p className="text-xs text-muted-foreground">+12 desde ayer</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Ahorro Promedio</CardTitle>
+              <DollarSign className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">68%</div>
+              <p className="text-xs text-muted-foreground">vs precio regular</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Alertas Enviadas</CardTitle>
+              <Calendar className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">45</div>
+              <p className="text-xs text-muted-foreground">esta semana</p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Latest Deals */}
         <Card className="mb-8">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Filter className="h-5 w-5" />
-              Filtros
-            </CardTitle>
+            <CardTitle className="text-2xl">Últimas Ofertas Detectadas</CardTitle>
+            <CardDescription>Errores de tarifa y chollos verificados por nuestro equipo</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <label className="text-sm font-medium mb-2 block">Continente</label>
-                <Select value={selectedContinent} onValueChange={setSelectedContinent}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todos los continentes</SelectItem>
-                    {continents.map(continent => (
-                      <SelectItem key={continent} value={continent}>{continent}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div>
-                <label className="text-sm font-medium mb-2 block">Aeropuerto de Salida</label>
-                <Select value={selectedAirport} onValueChange={setSelectedAirport}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todos los aeropuertos</SelectItem>
-                    {airports.map(airport => (
-                      <SelectItem key={airport} value={airport}>{airport}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div>
-                <label className="text-sm font-medium mb-2 block">Buscar Destino</label>
-                <Input placeholder="Ej: París, Tokio, Nueva York..." />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Main Content */}
-        <Tabs defaultValue="flights" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="flights" className="flex items-center gap-2">
-              <Plane className="h-4 w-4" />
-              Ofertas de Vuelos
-            </TabsTrigger>
-            <TabsTrigger value="hotels" className="flex items-center gap-2">
-              <Hotel className="h-4 w-4" />
-              Ofertas de Hoteles
-            </TabsTrigger>
-          </TabsList>
-
-          {/* Flight Deals */}
-          <TabsContent value="flights" className="space-y-6">
-            <div className="grid gap-6">
-              {filteredFlightDeals.map((deal) => (
-                <Card key={deal.id} className="hover:shadow-lg transition-shadow">
-                  <CardContent className="p-6">
-                    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-4 mb-3">
-                          <Badge 
-                            variant={deal.type === "Error de Tarifa" ? "destructive" : "secondary"}
-                            className="text-xs"
-                          >
-                            {deal.type}
-                          </Badge>
-                          {deal.verified && (
-                            <Badge className="bg-green-100 text-green-800 text-xs">
-                              ✓ Verificado
-                            </Badge>
-                          )}
-                          <div className="flex items-center gap-1 text-sm text-red-600">
-                            <Clock className="h-4 w-4" />
-                            {deal.timeLeft} restante
-                          </div>
-                        </div>
-                        
-                        <div className="flex items-center gap-6 mb-3">
-                          <div className="text-center">
-                            <div className="text-2xl font-bold">{deal.from}</div>
-                            <div className="text-sm text-gray-600">{deal.fromCity}</div>
-                          </div>
-                          <div className="flex-1 relative">
-                            <div className="border-t-2 border-dashed border-gray-300"></div>
-                            <Plane className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 h-5 w-5 text-blue-600 bg-white" />
-                          </div>
-                          <div className="text-center">
-                            <div className="text-2xl font-bold">{deal.to}</div>
-                            <div className="text-sm text-gray-600">{deal.toCity}</div>
-                          </div>
-                        </div>
-                        
-                        <div className="flex items-center gap-4 text-sm text-gray-600">
-                          <span>{deal.airline}</span>
-                          <span>•</span>
-                          <span>{deal.dates}</span>
-                          <span>•</span>
-                          <span>{deal.continent}</span>
-                        </div>
-                      </div>
-                      
-                      <div className="text-right">
-                        <div className="mb-2">
-                          <span className="text-sm text-gray-500 line-through">€{deal.originalPrice}</span>
-                          <div className="text-3xl font-bold text-green-600">€{deal.dealPrice}</div>
-                        </div>
-                        <div className="text-sm text-green-600 font-medium mb-3">
-                          Ahorras €{deal.savings}
-                        </div>
-                        <Button className="w-full">
-                          Ver Oferta
-                          <ExternalLink className="h-4 w-4 ml-2" />
-                        </Button>
-                      </div>
+            <div className="space-y-4">
+              {mockDeals.map((deal) => (
+                <div
+                  key={deal.id}
+                  className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="flex flex-col">
+                      <h3 className="font-semibold text-lg">{deal.title}</h3>
+                      <p className="text-sm text-gray-600">
+                        {deal.airline} • {deal.dates}
+                      </p>
                     </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </TabsContent>
-
-          {/* Hotel Deals */}
-          <TabsContent value="hotels" className="space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {filteredHotelDeals.map((deal) => (
-                <Card key={deal.id} className="hover:shadow-lg transition-shadow">
-                  <div className="aspect-video relative overflow-hidden rounded-t-lg">
-                    <img 
-                      src={deal.image || "/placeholder.svg"} 
-                      alt={deal.name}
-                      className="w-full h-full object-cover"
-                    />
-                    <Badge 
-                      className="absolute top-3 left-3 bg-red-600 text-white"
-                    >
-                      {deal.type}
-                    </Badge>
+                    <div className="flex gap-2">
+                      <Badge variant={deal.type === "Error de tarifa" ? "destructive" : "default"}>{deal.type}</Badge>
+                      {deal.verified && (
+                        <Badge variant="secondary" className="bg-green-100 text-green-800">
+                          Verificado
+                        </Badge>
+                      )}
+                    </div>
                   </div>
-                  <CardContent className="p-6">
-                    <div className="mb-3">
-                      <h3 className="text-xl font-bold mb-1">{deal.name}</h3>
-                      <div className="flex items-center gap-2 text-gray-600">
-                        <MapPin className="h-4 w-4" />
-                        <span>{deal.city}, {deal.country}</span>
+                  <div className="text-right">
+                    <div className="flex items-center gap-2">
+                      <span className="text-2xl font-bold text-green-600">{deal.price}</span>
+                      <div className="text-sm text-gray-500">
+                        <div className="line-through">{deal.originalPrice}</div>
+                        <div className="text-green-600 font-medium">-{deal.savings}</div>
                       </div>
                     </div>
-                    
-                    <div className="flex items-center gap-2 mb-3">
-                      <div className="flex items-center gap-1">
-                        <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                        <span className="font-medium">{deal.rating}</span>
-                      </div>
-                      <span className="text-gray-400">•</span>
-                      <span className="text-sm text-gray-600">{deal.dates}</span>
-                    </div>
-                    
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <span className="text-sm text-gray-500 line-through">€{deal.originalPrice}/noche</span>
-                        <div className="text-2xl font-bold text-green-600">€{deal.dealPrice}/noche</div>
-                        <div className="text-sm text-green-600">Ahorras €{deal.savings}</div>
-                      </div>
-                      <Button>
-                        Ver Hotel
-                        <ExternalLink className="h-4 w-4 ml-2" />
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
+                    <Button size="sm" className="mt-2">
+                      Ver Oferta
+                    </Button>
+                  </div>
+                </div>
               ))}
-            </div>
-          </TabsContent>
-        </Tabs>
-
-        {/* Community Section */}
-        <Card className="mt-8">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Users className="h-5 w-5" />
-              Comunidad Premium
-            </CardTitle>
-            <CardDescription>
-              Conecta con otros viajeros y comparte experiencias
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="text-center py-8">
-              <p className="text-gray-600 mb-4">
-                Únete a nuestro grupo privado de Telegram para recibir ofertas exclusivas y consejos de viaje
-              </p>
-              <Button size="lg">
-                Unirse al Grupo Premium
-                <ExternalLink className="h-4 w-4 ml-2" />
-              </Button>
             </div>
           </CardContent>
         </Card>
+
+        {/* Quick Actions */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Configurar Alertas</CardTitle>
+              <CardDescription>Personaliza tus notificaciones por aeropuerto y destino</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button className="w-full">Configurar Alertas</Button>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle>Comunidad Premium</CardTitle>
+              <CardDescription>Únete a nuestra comunidad privada de viajeros</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button variant="outline" className="w-full bg-transparent">
+                Acceder a Comunidad
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   )
