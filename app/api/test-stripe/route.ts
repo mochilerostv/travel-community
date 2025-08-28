@@ -9,88 +9,84 @@ export async function GET() {
   try {
     console.log("🔍 Testing Stripe configuration...")
 
-    // Verificar claves
-    const hasSecretKey = !!process.env.STRIPE_SECRET_KEY
-    const hasPublishableKey = !!process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
-    const hasPremiumPriceId = !!process.env.STRIPE_PREMIUM_PRICE_ID
-    const hasPremiumPlusPriceId = !!process.env.STRIPE_PREMIUM_PLUS_PRICE_ID
-
-    console.log("🔑 Keys status:", {
-      hasSecretKey,
-      hasPublishableKey,
-      hasPremiumPriceId,
-      hasPremiumPlusPriceId,
-    })
-
-    if (!hasSecretKey) {
+    // Verificar claves de Stripe
+    if (!process.env.STRIPE_SECRET_KEY) {
       return NextResponse.json(
         {
-          success: false,
-          error: "STRIPE_SECRET_KEY no encontrada",
-          debug: { hasSecretKey, hasPublishableKey, hasPremiumPriceId, hasPremiumPlusPriceId },
+          error: "STRIPE_SECRET_KEY not found",
+          configured: false,
         },
         { status: 500 },
       )
     }
 
-    // Probar conexión con Stripe
-    const prices = await stripe.prices.list({ limit: 3 })
-    console.log("💰 Found prices:", prices.data.length)
+    if (!process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY) {
+      return NextResponse.json(
+        {
+          error: "NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY not found",
+          configured: false,
+        },
+        { status: 500 },
+      )
+    }
 
-    // Verificar Price IDs específicos
+    // Verificar Price IDs
     const priceIds = {
       premium: process.env.STRIPE_PREMIUM_PRICE_ID,
       premium_plus: process.env.STRIPE_PREMIUM_PLUS_PRICE_ID,
     }
 
-    const priceValidation = {}
-    for (const [plan, priceId] of Object.entries(priceIds)) {
-      if (priceId) {
-        try {
-          const price = await stripe.prices.retrieve(priceId)
-          priceValidation[plan] = {
-            valid: true,
-            id: price.id,
-            amount: price.unit_amount,
-            currency: price.currency,
-            interval: price.recurring?.interval,
-          }
-          console.log(`✅ ${plan} price valid:`, price.id)
-        } catch (error) {
-          priceValidation[plan] = {
-            valid: false,
-            error: error instanceof Error ? error.message : "Unknown error",
-          }
-          console.error(`❌ ${plan} price invalid:`, error)
-        }
-      } else {
-        priceValidation[plan] = { valid: false, error: "Price ID not configured" }
-      }
+    console.log("💰 Price IDs:", priceIds)
+
+    // Intentar obtener información de los precios
+    const priceChecks = await Promise.allSettled([
+      priceIds.premium ? stripe.prices.retrieve(priceIds.premium) : Promise.reject("No premium price ID"),
+      priceIds.premium_plus
+        ? stripe.prices.retrieve(priceIds.premium_plus)
+        : Promise.reject("No premium_plus price ID"),
+    ])
+
+    const results = {
+      success: true,
+      stripe_configured: true,
+      environment: process.env.STRIPE_SECRET_KEY?.startsWith("sk_test_") ? "test" : "live",
+      price_ids: priceIds,
+      price_validation: {
+        premium: priceChecks[0].status === "fulfilled" ? "✅ Valid" : `❌ ${priceChecks[0].reason}`,
+        premium_plus: priceChecks[1].status === "fulfilled" ? "✅ Valid" : `❌ ${priceChecks[1].reason}`,
+      },
+      price_details: {
+        premium:
+          priceChecks[0].status === "fulfilled"
+            ? {
+                id: priceChecks[0].value.id,
+                amount: priceChecks[0].value.unit_amount,
+                currency: priceChecks[0].value.currency,
+                interval: priceChecks[0].value.recurring?.interval,
+              }
+            : null,
+        premium_plus:
+          priceChecks[1].status === "fulfilled"
+            ? {
+                id: priceChecks[1].value.id,
+                amount: priceChecks[1].value.unit_amount,
+                currency: priceChecks[1].value.currency,
+                interval: priceChecks[1].value.recurring?.interval,
+              }
+            : null,
+      },
+      timestamp: new Date().toISOString(),
     }
 
-    return NextResponse.json({
-      success: true,
-      message: "Stripe configuration test",
-      stripe: {
-        connected: true,
-        totalPrices: prices.data.length,
-      },
-      keys: {
-        hasSecretKey,
-        hasPublishableKey,
-        hasPremiumPriceId,
-        hasPremiumPlusPriceId,
-      },
-      priceValidation,
-      timestamp: new Date().toISOString(),
-    })
+    console.log("✅ Stripe test results:", results)
+    return NextResponse.json(results)
   } catch (error) {
-    console.error("❌ Stripe test failed:", error)
+    console.error("❌ Stripe test error:", error)
     return NextResponse.json(
       {
         success: false,
-        error: "Error connecting to Stripe",
-        details: error instanceof Error ? error.message : "Unknown error",
+        error: error instanceof Error ? error.message : "Unknown error",
+        stripe_configured: false,
         timestamp: new Date().toISOString(),
       },
       { status: 500 },
