@@ -50,9 +50,11 @@ export default function PricingPage() {
       setLoadingPlan(plan)
       console.log("🔄 Iniciando suscripción para plan:", plan)
 
-      const res = await fetch("/api/create-checkout-session", {
+      const response = await fetch("/api/create-checkout-session", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({
           plan,
           billing,
@@ -61,8 +63,15 @@ export default function PricingPage() {
         }),
       })
 
-      console.log("📡 Response status:", res.status)
-      const data = await res.json()
+      console.log("📡 Response status:", response.status)
+
+      if (!response.ok) {
+        const errorText = await response.text()
+        console.error("❌ Response not OK:", errorText)
+        throw new Error(`HTTP ${response.status}: ${errorText}`)
+      }
+
+      const data = await response.json()
       console.log("📦 Response data:", data)
 
       if (data?.url) {
@@ -70,11 +79,12 @@ export default function PricingPage() {
         window.location.href = data.url
       } else {
         console.error("❌ No checkout URL returned", data)
-        alert(`No se pudo iniciar el checkout. ${data.error || "Error desconocido"}`)
+        const errorMessage = data.error || data.details || "Error desconocido"
+        alert(`No se pudo iniciar el checkout. ${errorMessage}`)
       }
-    } catch (e) {
-      console.error("❌ Error en suscripción:", e)
-      alert("Error iniciando el checkout")
+    } catch (error) {
+      console.error("❌ Error en suscripción:", error)
+      alert(`Error iniciando el checkout: ${error instanceof Error ? error.message : "Error desconocido"}`)
     } finally {
       setLoadingPlan(null)
     }

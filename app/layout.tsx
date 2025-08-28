@@ -6,9 +6,9 @@ import "./globals.css"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "TravelDeals Pro - Chollos de viajes con IA",
+  title: "TravelDeals Pro - Los mejores chollos de viajes detectados por IA",
   description:
-    "Encuentra los mejores chollos de vuelos, hoteles y seguros de viaje detectados por inteligencia artificial",
+    "Nuestra IA escanea miles de vuelos y hoteles cada minuto para encontrar errores de tarifa y ofertas increíbles. Únete a más de 10,000 viajeros que ahorran hasta un 70% en sus viajes.",
     generator: 'v0.app'
 }
 
