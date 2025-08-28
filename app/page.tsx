@@ -21,9 +21,6 @@ export default function HomePage() {
             <Link href="/register">
               <Button variant="outline">Registrarse</Button>
             </Link>
-            <Link href="/pricing">
-              <Button>Empezar</Button>
-            </Link>
           </div>
         </nav>
       </header>
@@ -32,305 +29,244 @@ export default function HomePage() {
       <section className="container mx-auto px-4 py-16 text-center">
         <Badge className="mb-4 bg-blue-100 text-blue-800">Detección con IA 24/7</Badge>
         <h1 className="text-5xl font-bold text-gray-900 mb-6">
-          Los mejores <span className="text-blue-600">chollos de viajes</span>
-          <br />
-          detectados por inteligencia artificial
+          Los mejores <span className="text-blue-600">chollos de viajes</span> detectados por IA
         </h1>
         <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
-          Nuestra IA escanea miles de vuelos y hoteles cada minuto para encontrar errores de tarifa y ofertas
-          increíbles. Únete a más de 10,000 viajeros que ahorran hasta un 70% en sus viajes.
+          Únete a nuestra comunidad premium y recibe alertas instantáneas de errores de tarifa, ofertas de hoteles y
+          chollos verificados por nuestro equipo.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <Link href="/pricing">
-            <Button size="lg" className="text-lg px-8 py-4">
-              Ver Planes Premium
-              <ArrowRight className="ml-2 h-5 w-5" />
+            <Button size="lg" className="px-8 py-4 text-lg">
+              Ver planes <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
           </Link>
           <Link href="/register">
-            <Button size="lg" variant="outline" className="text-lg px-8 py-4 bg-transparent">
-              Registrarse Gratis
+            <Button size="lg" variant="outline" className="px-8 py-4 text-lg bg-transparent">
+              Probar gratis
             </Button>
           </Link>
         </div>
       </section>
 
-      {/* Features Section */}
+      {/* Features */}
       <section className="container mx-auto px-4 py-16">
         <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold text-gray-900 mb-4">¿Cómo funciona?</h2>
+          <h2 className="text-3xl font-bold text-gray-900 mb-4">¿Por qué TravelDeals Pro?</h2>
           <p className="text-gray-600 max-w-2xl mx-auto">
-            Nuestra tecnología de IA trabaja 24/7 para encontrar las mejores ofertas de viajes
+            Nuestra IA analiza millones de ofertas 24/7 para encontrar los mejores chollos antes que nadie.
           </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <Card>
-            <CardHeader className="text-center">
-              <div className="mx-auto w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
-                <Zap className="h-6 w-6 text-blue-600" />
+            <CardHeader>
+              <div className="flex items-center gap-2 text-blue-600">
+                <Zap className="h-6 w-6" />
+                <CardTitle>Detección instantánea</CardTitle>
               </div>
-              <CardTitle>Detección Automática</CardTitle>
               <CardDescription>
-                Nuestra IA escanea miles de vuelos y hoteles cada minuto buscando errores de precio y ofertas
+                IA que detecta errores de tarifa y chollos en tiempo real, 24 horas al día.
               </CardDescription>
             </CardHeader>
           </Card>
 
           <Card>
-            <CardHeader className="text-center">
-              <div className="mx-auto w-12 h-12 bg-emerald-100 rounded-lg flex items-center justify-center mb-4">
-                <Shield className="h-6 w-6 text-emerald-600" />
+            <CardHeader>
+              <div className="flex items-center gap-2 text-emerald-600">
+                <Shield className="h-6 w-6" />
+                <CardTitle>Ofertas verificadas</CardTitle>
               </div>
-              <CardTitle>Verificación Humana</CardTitle>
               <CardDescription>
-                Nuestro equipo verifica cada oferta para asegurar que sea real y reservable
+                Cada oferta es verificada por nuestro equipo humano antes de enviártela.
               </CardDescription>
             </CardHeader>
           </Card>
 
           <Card>
-            <CardHeader className="text-center">
-              <div className="mx-auto w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center mb-4">
-                <Bell className="h-6 w-6 text-orange-600" />
+            <CardHeader>
+              <div className="flex items-center gap-2 text-orange-600">
+                <Bell className="h-6 w-6" />
+                <CardTitle>Alertas personalizadas</CardTitle>
               </div>
-              <CardTitle>Alertas Instantáneas</CardTitle>
-              <CardDescription>
-                Recibe notificaciones inmediatas de ofertas desde tu aeropuerto y destinos favoritos
-              </CardDescription>
+              <CardDescription>Configura alertas por aeropuerto de salida, destinos y tipo de viaje.</CardDescription>
             </CardHeader>
           </Card>
         </div>
       </section>
 
-      {/* Deals Preview Section */}
+      {/* Deals Preview */}
       <section className="container mx-auto px-4 py-16">
         <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold text-gray-900 mb-4">Ofertas Recientes</h2>
-          <p className="text-gray-600">Ejemplos de chollos encontrados por nuestra IA</p>
+          <h2 className="text-3xl font-bold text-gray-900 mb-4">Ofertas recientes encontradas</h2>
+          <p className="text-gray-600">Ejemplos de chollos detectados por nuestra IA</p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <Card className="overflow-hidden">
-            <div className="h-48 bg-gradient-to-r from-blue-400 to-blue-600 flex items-center justify-center">
-              <div className="text-center text-white">
+            <div className="h-48 bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center">
+              <div className="text-white text-center">
                 <MapPin className="h-8 w-8 mx-auto mb-2" />
                 <p className="font-semibold">Madrid → París</p>
               </div>
             </div>
             <CardContent className="p-4">
               <div className="flex justify-between items-center mb-2">
-                <Badge className="bg-red-100 text-red-800">Error de Tarifa</Badge>
-                <div className="text-right">
-                  <span className="text-2xl font-bold text-green-600">€29</span>
-                  <span className="text-sm text-gray-500 line-through ml-2">€189</span>
+                <Badge variant="destructive">Error de tarifa</Badge>
+                <div className="flex items-center gap-1 text-yellow-500">
+                  <Star className="h-4 w-4 fill-current" />
+                  <span className="text-sm">4.8</span>
                 </div>
               </div>
-              <p className="text-sm text-gray-600 mb-2">Vuelo directo • 2h 15min</p>
+              <h3 className="font-semibold mb-1">Vuelos a París desde €29</h3>
+              <p className="text-sm text-gray-600 mb-2">Ida y vuelta • 3 días</p>
               <div className="flex items-center gap-2 text-sm text-gray-500">
                 <Clock className="h-4 w-4" />
-                <span>Detectado hace 2 horas</span>
+                <span>Detectado hace 2h</span>
               </div>
             </CardContent>
           </Card>
 
           <Card className="overflow-hidden">
-            <div className="h-48 bg-gradient-to-r from-emerald-400 to-emerald-600 flex items-center justify-center">
-              <div className="text-center text-white">
+            <div className="h-48 bg-gradient-to-r from-emerald-500 to-teal-600 flex items-center justify-center">
+              <div className="text-white text-center">
                 <MapPin className="h-8 w-8 mx-auto mb-2" />
                 <p className="font-semibold">Barcelona → Roma</p>
               </div>
             </div>
             <CardContent className="p-4">
               <div className="flex justify-between items-center mb-2">
-                <Badge className="bg-blue-100 text-blue-800">Chollo Hotel</Badge>
-                <div className="text-right">
-                  <span className="text-2xl font-bold text-green-600">€45</span>
-                  <span className="text-sm text-gray-500 line-through ml-2">€120</span>
+                <Badge className="bg-emerald-100 text-emerald-800">Chollo hotel</Badge>
+                <div className="flex items-center gap-1 text-yellow-500">
+                  <Star className="h-4 w-4 fill-current" />
+                  <span className="text-sm">4.9</span>
                 </div>
               </div>
-              <p className="text-sm text-gray-600 mb-2">Hotel 4★ • Centro histórico</p>
+              <h3 className="font-semibold mb-1">Hotel 4* en Roma €45/noche</h3>
+              <p className="text-sm text-gray-600 mb-2">Centro histórico • Desayuno incluido</p>
               <div className="flex items-center gap-2 text-sm text-gray-500">
                 <Clock className="h-4 w-4" />
-                <span>Detectado hace 5 horas</span>
+                <span>Detectado hace 5h</span>
               </div>
             </CardContent>
           </Card>
 
           <Card className="overflow-hidden">
-            <div className="h-48 bg-gradient-to-r from-purple-400 to-purple-600 flex items-center justify-center">
-              <div className="text-center text-white">
+            <div className="h-48 bg-gradient-to-r from-orange-500 to-red-600 flex items-center justify-center">
+              <div className="text-white text-center">
                 <MapPin className="h-8 w-8 mx-auto mb-2" />
                 <p className="font-semibold">Madrid → Nueva York</p>
               </div>
             </div>
             <CardContent className="p-4">
               <div className="flex justify-between items-center mb-2">
-                <Badge className="bg-purple-100 text-purple-800">Oferta Flash</Badge>
-                <div className="text-right">
-                  <span className="text-2xl font-bold text-green-600">€299</span>
-                  <span className="text-sm text-gray-500 line-through ml-2">€650</span>
+                <Badge variant="destructive">Error de tarifa</Badge>
+                <div className="flex items-center gap-1 text-yellow-500">
+                  <Star className="h-4 w-4 fill-current" />
+                  <span className="text-sm">4.7</span>
                 </div>
               </div>
-              <p className="text-sm text-gray-600 mb-2">Ida y vuelta • 8h 30min</p>
+              <h3 className="font-semibold mb-1">Vuelos a NYC desde €199</h3>
+              <p className="text-sm text-gray-600 mb-2">Ida y vuelta • 7 días</p>
               <div className="flex items-center gap-2 text-sm text-gray-500">
                 <Clock className="h-4 w-4" />
-                <span>Detectado hace 1 hora</span>
+                <span>Detectado hace 1h</span>
               </div>
             </CardContent>
           </Card>
         </div>
       </section>
 
-      {/* Stats Section */}
+      {/* Community */}
       <section className="container mx-auto px-4 py-16">
-        <div className="bg-white rounded-2xl shadow-xl p-8">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 text-center">
+        <div className="bg-white rounded-2xl p-8 shadow-lg">
+          <div className="text-center mb-8">
+            <Users className="h-12 w-12 text-blue-600 mx-auto mb-4" />
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">Únete a nuestra comunidad</h2>
+            <p className="text-gray-600 max-w-2xl mx-auto">
+              Más de 10,000 viajeros ya ahorran cientos de euros cada año con nuestras alertas premium.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
             <div>
               <div className="text-3xl font-bold text-blue-600 mb-2">10,000+</div>
-              <div className="text-gray-600">Viajeros activos</div>
+              <p className="text-gray-600">Miembros activos</p>
             </div>
             <div>
-              <div className="text-3xl font-bold text-emerald-600 mb-2">€2.5M</div>
-              <div className="text-gray-600">Ahorrado por usuarios</div>
+              <div className="text-3xl font-bold text-emerald-600 mb-2">€500</div>
+              <p className="text-gray-600">Ahorro promedio/año</p>
             </div>
             <div>
               <div className="text-3xl font-bold text-orange-600 mb-2">24/7</div>
-              <div className="text-gray-600">Detección automática</div>
-            </div>
-            <div>
-              <div className="text-3xl font-bold text-purple-600 mb-2">70%</div>
-              <div className="text-gray-600">Ahorro promedio</div>
+              <p className="text-gray-600">Detección automática</p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Testimonials */}
-      <section className="container mx-auto px-4 py-16">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold text-gray-900 mb-4">Lo que dicen nuestros usuarios</h2>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center mb-4">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                ))}
-              </div>
-              <p className="text-gray-600 mb-4">
-                "Increíble! Encontré un vuelo a Tokio por €350 cuando normalmente cuesta €800. La IA realmente
-                funciona."
-              </p>
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                  <Users className="h-4 w-4 text-blue-600" />
-                </div>
-                <div>
-                  <div className="font-semibold">María González</div>
-                  <div className="text-sm text-gray-500">Madrid</div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center mb-4">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                ))}
-              </div>
-              <p className="text-gray-600 mb-4">
-                "Las alertas son súper rápidas. Recibí una notificación de un error de tarifa y lo reservé en 5
-                minutos."
-              </p>
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center">
-                  <Users className="h-4 w-4 text-emerald-600" />
-                </div>
-                <div>
-                  <div className="font-semibold">Carlos Ruiz</div>
-                  <div className="text-sm text-gray-500">Barcelona</div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center mb-4">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                ))}
-              </div>
-              <p className="text-gray-600 mb-4">
-                "He ahorrado más de €1,200 este año gracias a TravelDeals Pro. Vale cada céntimo de la suscripción."
-              </p>
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
-                  <Users className="h-4 w-4 text-purple-600" />
-                </div>
-                <div>
-                  <div className="font-semibold">Ana Martín</div>
-                  <div className="text-sm text-gray-500">Valencia</div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="container mx-auto px-4 py-16">
-        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl p-8 text-center text-white">
-          <h2 className="text-3xl font-bold mb-4">¿Listo para ahorrar en tus viajes?</h2>
-          <p className="text-xl mb-8 opacity-90">
-            Únete a miles de viajeros que ya están ahorrando hasta un 70% con nuestra IA
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/pricing">
-              <Button size="lg" variant="secondary" className="text-lg px-8 py-4">
-                Ver Planes Premium
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
-            </Link>
-            <Link href="/register">
-              <Button
-                size="lg"
-                variant="outline"
-                className="text-lg px-8 py-4 border-white text-white hover:bg-white hover:text-blue-600 bg-transparent"
-              >
-                Empezar Gratis
-              </Button>
-            </Link>
-          </div>
-        </div>
+      {/* CTA */}
+      <section className="container mx-auto px-4 py-16 text-center">
+        <h2 className="text-3xl font-bold text-gray-900 mb-4">¿Listo para ahorrar en tus viajes?</h2>
+        <p className="text-xl text-gray-600 mb-8">
+          Únete hoy y empieza a recibir las mejores ofertas de viajes detectadas por IA.
+        </p>
+        <Link href="/pricing">
+          <Button size="lg" className="px-8 py-4 text-lg">
+            Ver planes desde €1,99/mes <ArrowRight className="ml-2 h-5 w-5" />
+          </Button>
+        </Link>
       </section>
 
       {/* Footer */}
-      <footer className="container mx-auto px-4 py-8 border-t">
-        <div className="flex flex-col md:flex-row justify-between items-center">
-          <div className="flex items-center gap-2 mb-4 md:mb-0">
-            <Plane className="h-6 w-6 text-blue-600" />
-            <span className="text-lg font-semibold text-gray-900">TravelDeals Pro</span>
+      <footer className="bg-gray-900 text-white py-12">
+        <div className="container mx-auto px-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div>
+              <div className="flex items-center gap-2 mb-4">
+                <Plane className="h-6 w-6" />
+                <span className="text-xl font-bold">TravelDeals Pro</span>
+              </div>
+              <p className="text-gray-400">Los mejores chollos de viajes detectados por IA, verificados por humanos.</p>
+            </div>
+            <div>
+              <h3 className="font-semibold mb-4">Producto</h3>
+              <ul className="space-y-2 text-gray-400">
+                <li>
+                  <Link href="/pricing" className="hover:text-white">
+                    Precios
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/register" className="hover:text-white">
+                    Registrarse
+                  </Link>
+                </li>
+              </ul>
+            </div>
+            <div>
+              <h3 className="font-semibold mb-4">Legal</h3>
+              <ul className="space-y-2 text-gray-400">
+                <li>
+                  <Link href="/terms" className="hover:text-white">
+                    Términos de uso
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/privacy" className="hover:text-white">
+                    Política de privacidad
+                  </Link>
+                </li>
+              </ul>
+            </div>
+            <div>
+              <h3 className="font-semibold mb-4">Contacto</h3>
+              <p className="text-gray-400">hola@traveldeals.pro</p>
+            </div>
           </div>
-          <div className="flex gap-6 text-sm text-gray-600">
-            <Link href="/terms" className="hover:text-gray-900">
-              Términos
-            </Link>
-            <Link href="/privacy" className="hover:text-gray-900">
-              Privacidad
-            </Link>
-            <Link href="/pricing" className="hover:text-gray-900">
-              Precios
-            </Link>
+          <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
+            <p>&copy; 2024 TravelDeals Pro. Todos los derechos reservados.</p>
           </div>
-        </div>
-        <div className="text-center text-sm text-gray-500 mt-4">
-          © 2024 TravelDeals Pro. Todos los derechos reservados.
         </div>
       </footer>
     </div>

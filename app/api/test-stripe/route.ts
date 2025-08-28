@@ -9,52 +9,91 @@ export async function GET() {
   try {
     console.log("🔍 Testing Stripe configuration...")
 
-    // Verificar variables de entorno
-    const stripeSecretKey = process.env.STRIPE_SECRET_KEY
-    const stripePremiumPriceId = process.env.STRIPE_PREMIUM_PRICE_ID
-    const stripePremiumPlusPriceId = process.env.STRIPE_PREMIUM_PLUS_PRICE_ID
+    // Verificar claves
+    const hasSecretKey = !!process.env.STRIPE_SECRET_KEY
+    const hasPublishableKey = !!process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+    const hasPremiumPriceId = !!process.env.STRIPE_PREMIUM_PRICE_ID
+    const hasPremiumPlusPriceId = !!process.env.STRIPE_PREMIUM_PLUS_PRICE_ID
 
-    console.log("🔑 Stripe Secret Key:", stripeSecretKey ? "✅ Present" : "❌ Missing")
-    console.log("💰 Premium Price ID:", stripePremiumPriceId)
-    console.log("💎 Premium Plus Price ID:", stripePremiumPlusPriceId)
+    console.log("🔑 Keys status:", {
+      hasSecretKey,
+      hasPublishableKey,
+      hasPremiumPriceId,
+      hasPremiumPlusPriceId,
+    })
 
-    if (!stripeSecretKey) {
-      return NextResponse.json({
-        error: "STRIPE_SECRET_KEY no configurado",
-        status: "error",
-      })
+    if (!hasSecretKey) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "STRIPE_SECRET_KEY no encontrada",
+          debug: { hasSecretKey, hasPublishableKey, hasPremiumPriceId, hasPremiumPlusPriceId },
+        },
+        { status: 500 },
+      )
     }
 
-    // Verificar conexión con Stripe
-    const prices = await stripe.prices.list({ limit: 10 })
-    console.log(
-      "📋 Available prices:",
-      prices.data.map((p) => ({ id: p.id, product: p.product })),
-    )
+    // Probar conexión con Stripe
+    const prices = await stripe.prices.list({ limit: 3 })
+    console.log("💰 Found prices:", prices.data.length)
+
+    // Verificar Price IDs específicos
+    const priceIds = {
+      premium: process.env.STRIPE_PREMIUM_PRICE_ID,
+      premium_plus: process.env.STRIPE_PREMIUM_PLUS_PRICE_ID,
+    }
+
+    const priceValidation = {}
+    for (const [plan, priceId] of Object.entries(priceIds)) {
+      if (priceId) {
+        try {
+          const price = await stripe.prices.retrieve(priceId)
+          priceValidation[plan] = {
+            valid: true,
+            id: price.id,
+            amount: price.unit_amount,
+            currency: price.currency,
+            interval: price.recurring?.interval,
+          }
+          console.log(`✅ ${plan} price valid:`, price.id)
+        } catch (error) {
+          priceValidation[plan] = {
+            valid: false,
+            error: error instanceof Error ? error.message : "Unknown error",
+          }
+          console.error(`❌ ${plan} price invalid:`, error)
+        }
+      } else {
+        priceValidation[plan] = { valid: false, error: "Price ID not configured" }
+      }
+    }
 
     return NextResponse.json({
-      status: "success",
-      message: "Stripe configurado correctamente",
-      config: {
-        stripeSecretKey: stripeSecretKey ? "configured" : "missing",
-        premiumPriceId: stripePremiumPriceId || "missing",
-        premiumPlusPriceId: stripePremiumPlusPriceId || "missing",
+      success: true,
+      message: "Stripe configuration test",
+      stripe: {
+        connected: true,
+        totalPrices: prices.data.length,
       },
-      availablePrices: prices.data.map((price) => ({
-        id: price.id,
-        product: price.product,
-        currency: price.currency,
-        unit_amount: price.unit_amount,
-        recurring: price.recurring,
-      })),
+      keys: {
+        hasSecretKey,
+        hasPublishableKey,
+        hasPremiumPriceId,
+        hasPremiumPlusPriceId,
+      },
+      priceValidation,
       timestamp: new Date().toISOString(),
     })
   } catch (error) {
-    console.error("❌ Error testing Stripe:", error)
-    return NextResponse.json({
-      error: "Error conectando con Stripe",
-      details: error instanceof Error ? error.message : "Unknown error",
-      status: "error",
-    })
+    console.error("❌ Stripe test failed:", error)
+    return NextResponse.json(
+      {
+        success: false,
+        error: "Error connecting to Stripe",
+        details: error instanceof Error ? error.message : "Unknown error",
+        timestamp: new Date().toISOString(),
+      },
+      { status: 500 },
+    )
   }
 }

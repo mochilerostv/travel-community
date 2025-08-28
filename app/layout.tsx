@@ -8,7 +8,7 @@ const inter = Inter({ subsets: ["latin"] })
 export const metadata: Metadata = {
   title: "TravelDeals Pro - Los mejores chollos de viajes detectados por IA",
   description:
-    "Nuestra IA escanea miles de vuelos y hoteles cada minuto para encontrar errores de tarifa y ofertas increíbles. Únete a más de 10,000 viajeros que ahorran hasta un 70% en sus viajes.",
+    "Únete a nuestra comunidad premium y recibe alertas instantáneas de errores de tarifa, ofertas de hoteles y chollos verificados por nuestro equipo.",
     generator: 'v0.app'
 }
 
