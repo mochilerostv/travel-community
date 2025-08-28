@@ -42,6 +42,23 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Verificar si es Product ID en lugar de Price ID
+    if (priceId.startsWith("prod_")) {
+      console.error("❌ Product ID provided instead of Price ID:", priceId)
+      return NextResponse.json(
+        {
+          error:
+            "ERROR: Tienes un Product ID (prod_) en lugar de Price ID (price_). Ve a Stripe Dashboard y copia el Price ID correcto.",
+          debug: {
+            plan,
+            priceId,
+            issue: "Product ID instead of Price ID",
+          },
+        },
+        { status: 400 },
+      )
+    }
+
     // Crear sesión de checkout
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
