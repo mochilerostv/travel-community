@@ -1,925 +1,578 @@
-/* Mochileros Travel Deals Plugin Styles */
-
-.mochileros-deals-signup {
-    max-width: 1200px;
-    margin: 2rem auto;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-}
-
-.signup-hero {
-    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-    color: white;
-    border-radius: 16px;
-    overflow: hidden;
-    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-}
-
-.signup-content {
-    padding: 3rem;
-    text-align: center;
-}
-
-.signup-hero h2 {
-    font-size: 2.5rem;
-    margin-bottom: 1rem;
-    color: white;
-    font-weight: 700;
-}
-
-.hero-subtitle {
-    font-size: 1.2rem;
-    margin-bottom: 2rem;
-    opacity: 0.9;
-    max-width: 600px;
-    margin-left: auto;
-    margin-right: auto;
-}
-
-.price-highlight {
-    display: inline-flex;
-    align-items: baseline;
-    background: rgba(255,255,255,0.15);
-    padding: 1rem 2rem;
-    border-radius: 50px;
-    margin-bottom: 3rem;
-    backdrop-filter: blur(10px);
-}
-
-.price {
-    font-size: 3rem;
-    font-weight: 800;
-    color: #4ade80;
-}
-
-.period {
-    font-size: 1.2rem;
-    margin-left: 0.5rem;
-    opacity: 0.8;
-}
-
-.benefits-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 1.5rem;
-    margin: 3rem 0;
-    text-align: left;
-}
-
-.benefit-item {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    background: rgba(255,255,255,0.1);
-    padding: 1.5rem;
-    border-radius: 12px;
-    backdrop-filter: blur(10px);
-}
-
-.benefit-icon {
-    font-size: 2rem;
-    flex-shrink: 0;
-}
-
-.benefit-text strong {
-    display: block;
-    font-size: 1.1rem;
-    margin-bottom: 0.25rem;
-}
-
-.benefit-text span {
-    font-size: 0.9rem;
-    opacity: 0.8;
-}
-
-.cta-section {
-    margin: 3rem 0;
-}
-
-.signup-button {
-    display: inline-block;
-    background: #4ade80;
-    color: #1e3c72;
-    padding: 1.25rem 3rem;
-    border-radius: 50px;
-    text-decoration: none;
-    font-weight: 700;
-    font-size: 1.2rem;
-    transition: all 0.3s ease;
-    box-shadow: 0 10px 25px rgba(74, 222, 128, 0.3);
-    margin-bottom: 1rem;
-}
-
-.signup-button:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 15px 35px rgba(74, 222, 128, 0.4);
-    text-decoration: none;
-    color: #1e3c72;
-}
-
-.guarantee, .cancel-anytime {
-    font-size: 0.9rem;
-    opacity: 0.8;
-    margin: 0.5rem 0;
-}
-
-.social-proof {
-    margin-top: 3rem;
-    padding-top: 2rem;
-    border-top: 1px solid rgba(255,255,255,0.2);
-}
-
-.stats {
-    display: flex;
-    justify-content: center;
-    gap: 3rem;
-    flex-wrap: wrap;
-}
-
-.stat {
-    text-align: center;
-}
-
-.stat strong {
-    display: block;
-    font-size: 1.8rem;
-    color: #4ade80;
-    font-weight: 800;
-}
-
-.stat span {
-    font-size: 0.9rem;
-    opacity: 0.8;
-}
-
-/* Dashboard Styles */
-.mochileros-deals-dashboard {
-    max-width: 1200px;
-    margin: 2rem auto;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-}
-
-.dashboard-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 2rem;
-    flex-wrap: wrap;
-    gap: 1rem;
-}
-
-.dashboard-header h2 {
-    font-size: 2rem;
-    color: #1e3c72;
-    margin: 0;
-}
-
-.member-badge {
-    background: linear-gradient(135deg, #4ade80, #22c55e);
-    color: white;
-    padding: 0.5rem 1.5rem;
-    border-radius: 25px;
-    font-weight: 600;
-    font-size: 0.9rem;
-}
-
-.stats-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 1.5rem;
-    margin-bottom: 3rem;
-}
-
-.stat-card {
-    background: white;
-    padding: 2rem;
-    border-radius: 12px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    border-left: 4px solid #4ade80;
-}
-
-.stat-icon {
-    font-size: 2.5rem;
-}
-
-.stat-number {
-    font-size: 2rem;
-    font-weight: 800;
-    color: #1e3c72;
-}
-
-.stat-label {
-    font-size: 0.9rem;
-    color: #64748b;
-}
-
-.filters-section {
-    background: white;
-    padding: 2rem;
-    border-radius: 12px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-    margin-bottom: 2rem;
-}
-
-.filters-section h3 {
-    margin-bottom: 1rem;
-    color: #1e3c72;
-}
-
-.filters-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1rem;
-}
-
-.filter-select, .filter-input {
-    padding: 0.75rem;
-    border: 2px solid #e2e8f0;
-    border-radius: 8px;
-    font-size: 0.9rem;
-    transition: border-color 0.2s;
-}
-
-.filter-select:focus, .filter-input:focus {
-    outline: none;
-    border-color: #4ade80;
-}
-
-.deals-section {
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-    overflow: hidden;
-}
-
-.section-tabs {
-    display: flex;
-    background: #f8fafc;
-    border-bottom: 1px solid #e2e8f0;
-}
-
-.tab-button {
-    flex: 1;
-    padding: 1rem 2rem;
-    border: none;
-    background: transparent;
-    font-size: 1rem;
-    font-weight: 600;
-    color: #64748b;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.tab-button.active {
-    background: white;
-    color: #1e3c72;
-    border-bottom: 3px solid #4ade80;
-}
-
-.deals-grid {
-    padding: 2rem;
-    display: grid;
-    gap: 2rem;
-}
-
-.deals-grid.hidden {
-    display: none;
-}
-
-.deal-card {
-    border: 2px solid #e2e8f0;
-    border-radius: 12px;
-    padding: 1.5rem;
-    transition: all 0.3s ease;
-}
-
-.deal-card:hover {
-    border-color: #4ade80;
-    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
-}
-
-.deal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1rem;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-}
-
-.deal-badges {
-    display: flex;
-    gap: 0.5rem;
-    flex-wrap: wrap;
-}
-
-.badge {
-    padding: 0.25rem 0.75rem;
-    border-radius: 20px;
-    font-size: 0.75rem;
-    font-weight: 600;
-}
-
-.badge.error-fare {
-    background: #fee2e2;
-    color: #dc2626;
-}
-
-.badge.flash-offer {
-    background: #fef3c7;
-    color: #d97706;
-}
-
-.badge.verified {
-    background: #dcfce7;
-    color: #16a34a;
-}
-
-.time-left {
-    color: #dc2626;
-    font-size: 0.85rem;
-    font-weight: 600;
-}
-
-.flight-route {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin: 1.5rem 0;
-}
-
-.airport {
-    text-align: center;
-}
-
-.airport-code {
-    font-size: 1.8rem;
-    font-weight: 800;
-    color: #1e3c72;
-}
-
-.airport-city {
-    font-size: 0.85rem;
-    color: #64748b;
-}
-
-.flight-line {
-    flex: 1;
-    position: relative;
-    height: 2px;
-    background: #e2e8f0;
-    margin: 0 1rem;
-}
-
-.plane-icon {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: white;
-    padding: 0.25rem;
-    font-size: 1.2rem;
-}
-
-.deal-details {
-    text-align: center;
-    margin-bottom: 1.5rem;
-}
-
-.airline {
-    color: #64748b;
-    font-size: 0.9rem;
-}
-
-.deal-pricing {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 1rem;
-}
-
-.original-price {
-    text-decoration: line-through;
-    color: #64748b;
-    font-size: 0.9rem;
-}
-
-.deal-price {
-    font-size: 2rem;
-    font-weight: 800;
-    color: #16a34a;
-}
-
-.savings {
-    color: #16a34a;
-    font-weight: 600;
-    font-size: 0.9rem;
-}
-
-.view-deal-btn {
-    background: #1e3c72;
-    color: white;
-    border: none;
-    padding: 0.75rem 1.5rem;
-    border-radius: 8px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background-color 0.2s;
-}
-
-.view-deal-btn:hover {
-    background: #2a5298;
-}
-
-/* Hotel Deal Styles */
-.hotel-deal {
-    display: flex;
-    gap: 1rem;
-}
-
-.hotel-image {
-    position: relative;
-    width: 200px;
-    height: 150px;
-    border-radius: 8px;
-    overflow: hidden;
-    flex-shrink: 0;
-}
-
-.hotel-image img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.hotel-badge {
-    position: absolute;
-    top: 0.5rem;
-    left: 0.5rem;
-    background: #dc2626;
-    color: white;
-    padding: 0.25rem 0.75rem;
-    border-radius: 4px;
-    font-size: 0.75rem;
-    font-weight: 600;
-}
-
-.hotel-content {
-    flex: 1;
-}
-
-.hotel-content h4 {
-    font-size: 1.3rem;
-    color: #1e3c72;
-    margin-bottom: 0.5rem;
-}
-
-.hotel-location, .hotel-rating {
-    color: #64748b;
-    font-size: 0.9rem;
-    margin-bottom: 0.5rem;
-}
-
-.hotel-pricing {
-    margin-top: 1rem;
-}
-
-/* Community Section */
-.community-section {
-    margin-top: 2rem;
-}
-
-.community-card {
-    background: linear-gradient(135deg, #4ade80, #22c55e);
-    color: white;
-    padding: 2rem;
-    border-radius: 12px;
-    text-align: center;
-}
-
-.community-card h3 {
-    margin-bottom: 1rem;
-    color: white;
-}
-
-.community-card p {
-    margin-bottom: 1.5rem;
-    opacity: 0.9;
-}
-
-.community-btn {
-    background: white;
-    color: #22c55e;
-    border: none;
-    padding: 1rem 2rem;
-    border-radius: 8px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: transform 0.2s;
-}
-
-.community-btn:hover {
-    transform: translateY(-2px);
-}
-
-/* Premium Content Lock */
-.premium-content-locked.mochileros-style {
-    background: linear-gradient(135deg, #f8fafc, #e2e8f0);
-    border: 2px dashed #cbd5e1;
-    border-radius: 16px;
-    padding: 3rem;
-    text-align: center;
-    margin: 2rem 0;
-}
-
-.lock-container {
-    max-width: 400px;
-    margin: 0 auto;
-}
-
-.lock-icon {
-    font-size: 4rem;
-    margin-bottom: 1rem;
-}
-
-.premium-content-locked h4 {
-    color: #1e3c72;
-    font-size: 1.5rem;
-    margin-bottom: 1rem;
-}
-
-.premium-content-locked p {
-    color: #64748b;
-    margin-bottom: 2rem;
-}
-
-.unlock-benefits {
-    margin: 2rem 0;
-}
-
-.benefit {
-    padding: 0.5rem 0;
-    color: #64748b;
-    font-size: 0.9rem;
-}
-
-.unlock-button {
-    display: inline-block;
-    background: linear-gradient(135deg, #1e3c72, #2a5298);
-    color: white;
-    padding: 1rem 2rem;
-    border-radius: 50px;
-    text-decoration: none;
-    font-weight: 600;
-    transition: transform 0.2s;
-    margin-bottom: 1rem;
-}
-
-.unlock-button:hover {
-    transform: translateY(-2px);
-    text-decoration: none;
-    color: white;
-}
-
-.guarantee-small {
-    font-size: 0.8rem;
-    color: #64748b;
-}
-
-/* Auth UI */
-.mtd-auth-wrapper {
-    max-width: 1000px;
-    margin: 2rem auto;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-}
-
-.mtd-auth-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1.5rem;
-}
-
-.mtd-card {
-    background: #fff;
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
-    padding: 1.5rem;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
-}
-
-.mtd-card--secondary {
-    opacity: 0.85;
-}
-
-.mtd-field {
-    margin-bottom: 1rem;
-}
-
-.mtd-field label {
-    display: block;
-    font-weight: 600;
-    margin-bottom: 0.35rem;
-    color: #1e3c72;
-}
-
-.mtd-field input,
-.mtd-field select {
-    width: 100%;
-    padding: 0.7rem 0.8rem;
-    border: 2px solid #e2e8f0;
-    border-radius: 8px;
-}
-
-.mtd-check {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    margin-right: 1rem;
-    font-size: 0.95rem;
-    color: #475569;
-}
-
-.mtd-btn {
-    background: #1e3c72;
-    color: #fff;
-    padding: 0.7rem 1.2rem;
-    border-radius: 8px;
-    border: none;
-    cursor: pointer;
-    font-weight: 700;
-}
-
-.mtd-btn:hover {
-    background: #2a5298;
-}
-
-.mtd-btn.mtd-btn--ghost {
-    background: #eef2ff;
-    color: #1e3c72;
-}
-
-.mtd-alert {
-    background: #fef3c7;
-    border: 1px solid #fde68a;
-    border-radius: 8px;
-    padding: 0.75rem 1rem;
-    margin-bottom: 1rem;
-    color: #92400e;
-}
-
-.mtd-account {
-    max-width: 800px;
-    margin: 2rem auto;
-}
-
-.mtd-kv {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-
-.mtd-kv li {
-    padding: 0.4rem 0;
-    border-bottom: 1px dashed #e2e8f0;
-}
-
-.mtd-badge {
-    background: #dcfce7;
-    color: #166534;
-    padding: 0.15rem 0.5rem;
-    border-radius: 6px;
-    font-size: 0.85rem;
-}
-
-.mtd-actions {
-    display: flex;
-    gap: 0.75rem;
-    margin-top: 1rem;
-    align-items: center;
-    flex-wrap: wrap;
-}
-
-/* Responsive Design */
-@media (max-width: 900px) {
-    .mtd-auth-grid {
-        grid-template-columns: 1fr;
-    }
-}
-
-@media (max-width: 768px) {
-    .signup-content {
-        padding: 2rem 1.5rem;
-    }
-    
-    .signup-hero h2 {
-        font-size: 2rem;
-    }
-    
-    .benefits-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .stats {
-        gap: 2rem;
-    }
-    
-    .stats-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .filters-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .flight-route {
-        flex-direction: column;
-        gap: 1rem;
-    }
-    
-    .flight-line {
-        width: 2px;
-        height: 30px;
-        margin: 0;
-    }
-    
-    .deal-pricing {
-        flex-direction: column;
-        text-align: center;
-    }
-    
-    .hotel-deal {
-        flex-direction: column;
-    }
-    
-    .hotel-image {
-        width: 100%;
-        height: 200px;
-    }
-
-  .airport-code { font-size: 1.6rem; }
-}
-
-/* === Overrides de contraste y estilos (agosto 2025) === */
-
-/* 1) Texto blanco en todos los botones del plugin */
-.mtd-btn,
-.signup-button,
-.unlock-button,
-.view-deal-btn {
-  color: #fff !important;
-  text-decoration: none !important;
-  font-weight: 700;
-}
-.mtd-btn:hover,
-.signup-button:hover,
-.unlock-button:hover,
-.view-deal-btn:hover {
-  color: #fff !important;
-  opacity: .95;
-}
-
-/* 2) CTA hero (ver comunidad) con texto blanco y mejor contraste */
-.signup-button.primary,
-.signup-button {
-  background: linear-gradient(135deg, #16a34a, #22c55e) !important; /* verde accesible */
-  color: #fff !important;
-  border: 0;
-}
-
-/* 3) Botón "Ver oferta" con azul oscuro y esquinas suaves */
-.view-deal-btn {
-  background: #1e3a8a; /* azul oscuro */
-  border-radius: 10px;
-  padding: 0.75rem 1.25rem;
-  box-shadow: 0 6px 18px rgba(30,58,138,0.15);
-}
-
-/* 4) Botones genéricos del plugin */
-.mtd-btn {
-  background: #1e3a8a; /* unificar branding */
-  border-radius: 10px;
-  box-shadow: 0 6px 18px rgba(30,58,138,0.12);
-}
-.mtd-btn.mtd-btn--ghost {
-  background: #1e40af1a; /* sutil */
-  color: #1e3a8a !important;
-}
-
-/* 5) Tarjetas de vuelos estilo limpio (como la captura) */
-.deal-card {
-  background: #fff;
-  border: 1px solid #e5edf7;
+/* Mochileros Travel Deals - Estilos CSS */
+
+/* Variables CSS */
+:root {
+  --primary-color: #1e3c72;
+  --secondary-color: #4ade80;
+  --accent-color: #f59e0b;
+  --danger-color: #dc2626;
+  --text-color: #1f2937;
+  --text-light: #6b7280;
+  --bg-light: #f9fafb;
+  --border-color: #e5e7eb;
+  --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+/* Reset y base */
+.mochileros-signup-hero *,
+.mochileros-dashboard *,
+.mochileros-deals-feed *,
+.mochileros-premium-gate * {
+  box-sizing: border-box;
+}
+
+/* Hero de registro */
+.mochileros-signup-hero {
+  background: linear-gradient(135deg, var(--primary-color) 0%, #2563eb 100%);
+  color: white;
+  padding: 4rem 2rem;
   border-radius: 12px;
-  padding: 1.25rem;
-  transition: box-shadow .2s, border-color .2s, transform .2s;
+  text-align: center;
+  margin: 2rem 0;
 }
+
+.mochileros-signup-hero .hero-content h2 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  line-height: 1.2;
+}
+
+.mochileros-signup-hero .hero-content p {
+  font-size: 1.25rem;
+  margin-bottom: 2rem;
+  opacity: 0.9;
+}
+
+.hero-features {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  margin: 2rem 0;
+  flex-wrap: wrap;
+}
+
+.hero-features .feature {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 500;
+}
+
+.hero-features .feature-icon {
+  font-size: 1.5rem;
+}
+
+.mochileros-cta-button {
+  display: inline-block;
+  background: var(--secondary-color);
+  color: white;
+  padding: 1rem 2rem;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 1.1rem;
+  transition: all 0.3s ease;
+  box-shadow: var(--shadow);
+}
+
+.mochileros-cta-button:hover {
+  background: #22c55e;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+  color: white;
+  text-decoration: none;
+}
+
+/* Dashboard */
+.mochileros-dashboard {
+  margin: 2rem 0;
+}
+
+.dashboard-filters {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  padding: 1rem;
+  background: var(--bg-light);
+  border-radius: 8px;
+  flex-wrap: wrap;
+}
+
+.dashboard-filters select,
+.dashboard-filters .button {
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background: white;
+  font-size: 0.9rem;
+}
+
+.dashboard-filters .button {
+  background: var(--primary-color);
+  color: white;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.dashboard-filters .button:hover {
+  background: #1e40af;
+}
+
+/* Grid de ofertas */
+.deals-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1rem;
+}
+
+.deal-card {
+  background: white;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: var(--shadow);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
 .deal-card:hover {
-  border-color: #cfe0f3;
-  box-shadow: 0 8px 28px rgba(2, 6, 23, 0.06);
-  transform: translateY(-1px);
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
 }
 
 .deal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: .75rem;
+  margin-bottom: 1rem;
 }
 
-.deal-badges { display: flex; gap: .5rem; flex-wrap: wrap; }
-
-.badge { border-radius: 9999px; padding: .35rem .7rem; font-weight: 600; }
-.badge.error-fare { background: #fee2e2; color: #dc2626; }
-.badge.flash-offer { background: #fef3c7; color: #b45309; }
-.badge.verified { background: #dcfce7; color: #16a34a; }
-
-/* Contador rojo */
-.time-left { color: #dc2626; font-weight: 700; display: inline-flex; align-items: center; gap: .35rem; }
-
-/* Ruta de vuelo */
-.flight-route { display: flex; align-items: center; justify-content: space-between; margin: 1.25rem 0; }
-.flight-line {
-  flex: 1;
-  position: relative;
-  height: 2px;
-  background: #e5e7eb;
-  margin: 0 1rem;
+.deal-type {
+  background: var(--accent-color);
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
 }
-.plane-icon {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background: #fff;
-  font-size: 1.1rem;
-  padding: .15rem;
-  border-radius: 6px;
-  color: #2563eb;
-  box-shadow: 0 0 0 2px #fff;
+
+.deal-source {
+  font-size: 0.8rem;
+  color: var(--text-light);
+  text-transform: capitalize;
 }
-.airport { text-align: center; }
-.airport-code { font-size: 2rem; font-weight: 800; color: #0f172a; letter-spacing: .5px; }
-.airport-city { font-size: .9rem; color: #64748b; }
 
-/* Línea de detalles */
-.deal-details { text-align: center; margin-bottom: 1rem; color: #64748b; }
-
-/* Precios y ahorro */
-.deal-pricing { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; }
-.original-price { color: #94a3b8; text-decoration: line-through; font-size: .95rem; }
-.deal-price { color: #16a34a; font-size: 2rem; font-weight: 800; line-height: 1; }
-.savings { color: #16a34a; font-weight: 700; font-size: .95rem; }
-
-/* 6) Sección de features (como la captura 2) */
-.mtd-features {
-  max-width: 1200px;
-  margin: 2.5rem auto;
+.deal-route {
   text-align: center;
-  padding: 0 1rem;
+  margin: 1rem 0;
 }
-.mtd-features h2 {
-  font-size: 2.1rem;
-  color: #0f172a;
-  margin-bottom: .35rem;
-  font-weight: 800;
+
+.deal-route .city {
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: var(--text-color);
 }
-.mtd-features .subtitle {
-  color: #475569;
-  margin-bottom: 1.75rem;
+
+.deal-route .arrow {
+  margin: 0 1rem;
+  color: var(--primary-color);
+  font-weight: bold;
 }
-.mtd-features-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit,minmax(260px,1fr));
-  gap: 1rem;
+
+.deal-price {
+  text-align: center;
+  margin: 1rem 0;
 }
-.mtd-feature-card {
-  background: #fff;
-  border: 1px solid #e5edf7;
+
+.current-price {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--secondary-color);
+}
+
+.original-price {
+  font-size: 1rem;
+  color: var(--text-light);
+  text-decoration: line-through;
+  margin-left: 0.5rem;
+}
+
+.savings {
+  display: block;
+  font-size: 0.9rem;
+  color: var(--danger-color);
+  font-weight: 600;
+  margin-top: 0.25rem;
+}
+
+.deal-details {
+  margin: 1rem 0;
+  font-size: 0.9rem;
+  color: var(--text-color);
+}
+
+.deal-details p {
+  margin: 0.5rem 0;
+}
+
+.deal-details .expires {
+  color: var(--danger-color);
+  font-weight: 600;
+}
+
+.deal-button {
+  display: block;
+  width: 100%;
+  background: var(--primary-color);
+  color: white;
+  padding: 0.75rem;
+  text-align: center;
+  text-decoration: none;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: background 0.3s ease;
+}
+
+.deal-button:hover {
+  background: #1e40af;
+  color: white;
+  text-decoration: none;
+}
+
+/* Estados de carga y error */
+.loading,
+.no-deals,
+.error {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: var(--text-light);
+  font-size: 1.1rem;
+}
+
+.error {
+  color: var(--danger-color);
+}
+
+/* Contenido premium */
+.mochileros-premium-gate {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border: 2px solid var(--accent-color);
   border-radius: 12px;
-  padding: 1.25rem;
-  text-align: left;
-  transition: border-color .2s, box-shadow .2s, transform .2s;
+  padding: 2rem;
+  text-align: center;
+  margin: 2rem 0;
 }
-.mtd-feature-card:hover {
-  border-color: #cfe0f3;
-  box-shadow: 0 10px 24px rgba(2, 6, 23, 0.06);
+
+.premium-message h3 {
+  color: var(--text-color);
+  margin-bottom: 1rem;
+  font-size: 1.5rem;
+}
+
+.premium-message p {
+  color: var(--text-color);
+  margin-bottom: 1.5rem;
+  font-size: 1.1rem;
+}
+
+.premium-upgrade-btn {
+  display: inline-block;
+  background: var(--accent-color);
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.premium-upgrade-btn:hover {
+  background: #d97706;
+  transform: translateY(-2px);
+  color: white;
+  text-decoration: none;
+}
+
+/* Feed de ofertas */
+.mochileros-deals-feed {
+  margin: 2rem 0;
+}
+
+.deals-grid .deal-item,
+.deals-list .deal-item {
+  background: white;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.3s ease;
+}
+
+.deals-list .deal-item {
+  flex-direction: row;
+}
+
+.deals-grid .deal-item {
+  flex-direction: column;
+  text-align: center;
+}
+
+.deal-item:hover {
+  box-shadow: var(--shadow);
   transform: translateY(-2px);
 }
-.mtd-feature-icon {
-  width: 36px;
-  height: 36px;
-  display: inline-flex;
+
+.deal-info h4 {
+  margin: 0 0 0.5rem 0;
+  color: var(--text-color);
+  font-size: 1.1rem;
+}
+
+.deal-info .deal-price {
+  font-weight: 700;
+  color: var(--secondary-color);
+  font-size: 1.2rem;
+  margin: 0.25rem 0;
+}
+
+.deal-info .deal-route {
+  color: var(--text-light);
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.deal-link {
+  background: var(--primary-color);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: background 0.3s ease;
+}
+
+.deal-link:hover {
+  background: #1e40af;
+  color: white;
+  text-decoration: none;
+}
+
+/* Admin Dashboard */
+.mochileros-admin-dashboard {
+  max-width: 1200px;
+}
+
+.mochileros-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.stat-box {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+  text-align: center;
+}
+
+.stat-box h3 {
+  margin: 0 0 1rem 0;
+  color: var(--text-color);
+  font-size: 1.1rem;
+}
+
+.stat-box p {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--primary-color);
+  margin: 0.5rem 0;
+}
+
+.mochileros-actions {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+  margin-bottom: 2rem;
+}
+
+.mochileros-actions h3 {
+  margin: 0 0 1rem 0;
+  color: var(--text-color);
+}
+
+.mochileros-actions .button {
+  margin-right: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.mochileros-shortcodes {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+}
+
+.mochileros-shortcodes h3 {
+  margin: 0 0 1rem 0;
+  color: var(--text-color);
+}
+
+.shortcode-item {
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.shortcode-item:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.shortcode-item code {
+  background: var(--bg-light);
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-family: "Courier New", monospace;
+  font-size: 0.9rem;
+  color: var(--primary-color);
+}
+
+.shortcode-item p {
+  margin: 0.5rem 0 0 0;
+  color: var(--text-light);
+  font-size: 0.9rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .mochileros-signup-hero {
+    padding: 2rem 1rem;
+  }
+
+  .mochileros-signup-hero .hero-content h2 {
+    font-size: 2rem;
+  }
+
+  .hero-features {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .dashboard-filters {
+    flex-direction: column;
+  }
+
+  .deals-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .deal-route .arrow {
+    margin: 0 0.5rem;
+  }
+
+  .deals-list .deal-item {
+    flex-direction: column;
+    text-align: center;
+    gap: 1rem;
+  }
+
+  .mochileros-stats {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .mochileros-signup-hero .hero-content h2 {
+    font-size: 1.75rem;
+  }
+
+  .current-price {
+    font-size: 1.5rem;
+  }
+
+  .deal-card {
+    padding: 1rem;
+  }
+}
+
+/* Animaciones */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.deal-card {
+  animation: fadeIn 0.5s ease-out;
+}
+
+.deal-item {
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* Estados especiales */
+.deal-card.urgent {
+  border-left: 4px solid var(--danger-color);
+}
+
+.deal-card.verified::after {
+  content: "✓";
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: var(--secondary-color);
+  color: white;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
   align-items: center;
   justify-content: center;
-  color: #2563eb;
-  font-size: 22px;
-  border: 2px solid #bfdbfe;
-  border-radius: 10px;
-  background: #eff6ff;
-  margin-bottom: .75rem;
+  font-size: 0.8rem;
+  font-weight: bold;
 }
-.mtd-feature-card h4 { margin: 0 0 .25rem 0; color: #0f172a; font-size: 1.1rem; }
-.mtd-feature-card p  { margin: 0; color: #64748b; font-size: .95rem; }
+
+/* Modo oscuro (opcional) */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --text-color: #f9fafb;
+    --text-light: #d1d5db;
+    --bg-light: #1f2937;
+    --border-color: #374151;
+  }
+
+  .deal-card,
+  .stat-box,
+  .mochileros-actions,
+  .mochileros-shortcodes {
+    background: #111827;
+    color: var(--text-color);
+  }
+
+  .dashboard-filters {
+    background: #1f2937;
+  }
+
+  .dashboard-filters select {
+    background: #111827;
+    color: var(--text-color);
+    border-color: var(--border-color);
+  }
+}

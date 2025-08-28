@@ -5,18 +5,27 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: "2024-06-20",
 })
 
-export async function POST(req: NextRequest) {
+export async function POST(request: NextRequest) {
   try {
-    const { priceId, email, successUrl, cancelUrl } = await req.json()
+    const { priceId, email, successUrl, cancelUrl } = await request.json()
 
-    // Verificar que tenemos Stripe configurado
     if (!process.env.STRIPE_SECRET_KEY) {
       return NextResponse.json(
         {
           success: false,
-          message: "Stripe no configurado - añade STRIPE_SECRET_KEY",
+          message: "Stripe no configurado",
         },
         { status: 500 },
+      )
+    }
+
+    if (!priceId) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Price ID requerido",
+        },
+        { status: 400 },
       )
     }
 
@@ -31,11 +40,17 @@ export async function POST(req: NextRequest) {
         },
       ],
       customer_email: email,
-      success_url: successUrl || `${process.env.NEXT_PUBLIC_BASE_URL}/dashboard?success=true`,
-      cancel_url: cancelUrl || `${process.env.NEXT_PUBLIC_BASE_URL}/pricing?canceled=true`,
+      success_url: successUrl || `${process.env.NEXT_PUBLIC_BASE_URL}/dashboard?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: cancelUrl || `${process.env.NEXT_PUBLIC_BASE_URL}/pricing`,
       metadata: {
-        email,
-        priceId,
+        email: email || "",
+        plan: priceId.includes("premium_plus") ? "premium_plus" : "premium",
+      },
+      subscription_data: {
+        metadata: {
+          email: email || "",
+          plan: priceId.includes("premium_plus") ? "premium_plus" : "premium",
+        },
       },
     })
 
@@ -45,12 +60,11 @@ export async function POST(req: NextRequest) {
       url: session.url,
     })
   } catch (error) {
-    console.error("Stripe checkout error:", error)
+    console.error("Checkout session error:", error)
     return NextResponse.json(
       {
         success: false,
-        message: "Error creando sesión de pago",
-        error: error instanceof Error ? error.message : "Unknown error",
+        message: error instanceof Error ? error.message : "Error creando sesión de pago",
       },
       { status: 500 },
     )
@@ -60,7 +74,7 @@ export async function POST(req: NextRequest) {
 export async function GET() {
   return NextResponse.json({
     success: true,
-    message: "Endpoint de checkout Stripe",
+    message: "Endpoint de creación de sesiones de checkout",
     methods: ["POST"],
     requiredFields: ["priceId"],
     optionalFields: ["email", "successUrl", "cancelUrl"],

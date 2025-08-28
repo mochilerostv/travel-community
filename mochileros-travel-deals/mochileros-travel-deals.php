@@ -2,10 +2,11 @@
 /**
  * Plugin Name: Mochileros Travel Deals
  * Plugin URI: https://v0-travel-community-creation.vercel.app
- * Description: Plugin para mostrar ofertas de viaje premium con integración IA
+ * Description: Plugin para mostrar ofertas de viaje premium con integración de IA
  * Version: 1.4.0
  * Author: Mochileros TV
  * License: GPL v2 or later
+ * Text Domain: mochileros-deals
  */
 
 // Prevenir acceso directo
@@ -13,51 +14,67 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-// Definir constantes
-define('MTD_PLUGIN_URL', plugin_dir_url(__FILE__));
-define('MTD_PLUGIN_PATH', plugin_dir_path(__FILE__));
-define('MTD_VERSION', '1.4.0');
+// Definir constantes del plugin
+define('MOCHILEROS_DEALS_VERSION', '1.4.0');
+define('MOCHILEROS_DEALS_PLUGIN_URL', plugin_dir_url(__FILE__));
+define('MOCHILEROS_DEALS_PLUGIN_PATH', plugin_dir_path(__FILE__));
 
 class MochilerosTravelDeals {
     
-    private $api_url = 'https://v0-travel-community-creation.vercel.app';
-    private $api_token = '';
+    private $api_url;
+    private $api_token;
     
     public function __construct() {
         add_action('init', array($this, 'init'));
         add_action('wp_enqueue_scripts', array($this, 'enqueue_scripts'));
-        add_action('admin_menu', array($this, 'admin_menu'));
+        add_action('admin_menu', array($this, 'add_admin_menu'));
         add_action('admin_init', array($this, 'admin_init'));
         
-        // Shortcodes
+        // Registrar shortcodes
         add_shortcode('mochileros_deals_signup', array($this, 'deals_signup_shortcode'));
         add_shortcode('mochileros_deals_dashboard', array($this, 'deals_dashboard_shortcode'));
-        add_shortcode('mochileros_deals_premium', array($this, 'deals_premium_shortcode'));
+        add_shortcode('mochileros_deals_premium', array($this, 'premium_content_shortcode'));
+        add_shortcode('mochileros_deals_feed', array($this, 'deals_feed_shortcode'));
         
-        // AJAX handlers
-        add_action('wp_ajax_mtd_test_api', array($this, 'test_api_connection'));
-        add_action('wp_ajax_mtd_extract_deal', array($this, 'extract_deal_data'));
+        // Hooks de activación/desactivación
+        register_activation_hook(__FILE__, array($this, 'activate'));
+        register_deactivation_hook(__FILE__, array($this, 'deactivate'));
+        
+        // Cargar configuración
+        $this->api_url = get_option('mochileros_api_url', 'https://v0-travel-community-creation.vercel.app');
+        $this->api_token = get_option('mochileros_api_token', '');
     }
     
     public function init() {
-        // Cargar configuración
-        $this->api_url = get_option('mtd_api_url', 'https://v0-travel-community-creation.vercel.app');
-        $this->api_token = get_option('mtd_api_token', '');
+        // Cargar textdomain para traducciones
+        load_plugin_textdomain('mochileros-deals', false, dirname(plugin_basename(__FILE__)) . '/languages');
     }
     
     public function enqueue_scripts() {
-        wp_enqueue_style('mtd-styles', MTD_PLUGIN_URL . 'assets/mochileros-deals.css', array(), MTD_VERSION);
-        wp_enqueue_script('mtd-scripts', MTD_PLUGIN_URL . 'assets/mochileros-deals.js', array('jquery'), MTD_VERSION, true);
+        wp_enqueue_style(
+            'mochileros-deals-style',
+            MOCHILEROS_DEALS_PLUGIN_URL . 'assets/mochileros-deals.css',
+            array(),
+            MOCHILEROS_DEALS_VERSION
+        );
         
-        // Localizar script para AJAX
-        wp_localize_script('mtd-scripts', 'mtd_ajax', array(
+        wp_enqueue_script(
+            'mochileros-deals-script',
+            MOCHILEROS_DEALS_PLUGIN_URL . 'assets/mochileros-deals.js',
+            array('jquery'),
+            MOCHILEROS_DEALS_VERSION,
+            true
+        );
+        
+        // Localizar script con datos del plugin
+        wp_localize_script('mochileros-deals-script', 'mochileros_ajax', array(
             'ajax_url' => admin_url('admin-ajax.php'),
-            'nonce' => wp_create_nonce('mtd_nonce'),
+            'nonce' => wp_create_nonce('mochileros_nonce'),
             'api_url' => $this->api_url
         ));
     }
     
-    public function admin_menu() {
+    public function add_admin_menu() {
         add_menu_page(
             'Mochileros Deals',
             'Mochileros Deals',
@@ -79,153 +96,95 @@ class MochilerosTravelDeals {
     }
     
     public function admin_init() {
-        register_setting('mtd_settings', 'mtd_api_url');
-        register_setting('mtd_settings', 'mtd_api_token');
-        register_setting('mtd_settings', 'mtd_premium_page');
-        register_setting('mtd_settings', 'mtd_signup_page');
+        register_setting('mochileros_deals_settings', 'mochileros_api_url');
+        register_setting('mochileros_deals_settings', 'mochileros_api_token');
+        register_setting('mochileros_deals_settings', 'mochileros_enable_ai');
+        register_setting('mochileros_deals_settings', 'mochileros_default_source');
     }
     
     public function admin_page() {
         ?>
         <div class="wrap">
             <h1>Mochileros Travel Deals</h1>
-            
-            <div class="mtd-admin-dashboard">
-                <div class="mtd-stats-grid">
-                    <div class="mtd-stat-card">
-                        <h3>Estado API</h3>
-                        <div id="mtd-api-status">
-                            <button type="button" class="button" onclick="mtdTestAPI()">Probar Conexión</button>
-                        </div>
+            <div class="mochileros-admin-dashboard">
+                <div class="mochileros-stats">
+                    <div class="stat-box">
+                        <h3>Estado de la API</h3>
+                        <p id="api-status">Verificando...</p>
+                        <button id="test-api" class="button">Probar Conexión</button>
                     </div>
-                    
-                    <div class="mtd-stat-card">
-                        <h3>Ofertas Activas</h3>
-                        <div class="mtd-stat-number" id="mtd-active-deals">-</div>
+                    <div class="stat-box">
+                        <h3>Ofertas Procesadas</h3>
+                        <p id="deals-count">-</p>
                     </div>
-                    
-                    <div class="mtd-stat-card">
-                        <h3>Última Actualización</h3>
-                        <div class="mtd-stat-text" id="mtd-last-update">-</div>
+                    <div class="stat-box">
+                        <h3>IA Activa</h3>
+                        <p id="ai-status">-</p>
                     </div>
                 </div>
                 
-                <div class="mtd-actions">
+                <div class="mochileros-actions">
                     <h3>Acciones Rápidas</h3>
-                    <button type="button" class="button button-primary" onclick="mtdIngestDeals()">
-                        Actualizar Ofertas
-                    </button>
-                    <button type="button" class="button" onclick="mtdTestExtraction()">
-                        Probar Extracción IA
-                    </button>
+                    <button id="sync-deals" class="button button-primary">Sincronizar Ofertas</button>
+                    <button id="test-ai" class="button">Probar IA</button>
+                    <a href="<?php echo admin_url('admin.php?page=mochileros-deals-settings'); ?>" class="button">Configuración</a>
                 </div>
                 
-                <div class="mtd-shortcodes">
+                <div class="mochileros-shortcodes">
                     <h3>Shortcodes Disponibles</h3>
-                    <div class="mtd-shortcode-list">
-                        <div class="mtd-shortcode-item">
-                            <code>[mochileros_deals_signup]</code>
-                            <span>Hero de registro premium</span>
-                        </div>
-                        <div class="mtd-shortcode-item">
-                            <code>[mochileros_deals_dashboard]</code>
-                            <span>Dashboard con ofertas</span>
-                        </div>
-                        <div class="mtd-shortcode-item">
-                            <code>[mochileros_deals_premium]contenido[/mochileros_deals_premium]</code>
-                            <span>Contenido protegido para premium</span>
-                        </div>
+                    <div class="shortcode-item">
+                        <code>[mochileros_deals_signup]</code>
+                        <p>Hero de registro premium</p>
+                    </div>
+                    <div class="shortcode-item">
+                        <code>[mochileros_deals_dashboard]</code>
+                        <p>Dashboard con ofertas</p>
+                    </div>
+                    <div class="shortcode-item">
+                        <code>[mochileros_deals_feed limit="5" source="all"]</code>
+                        <p>Feed de ofertas personalizable</p>
+                    </div>
+                    <div class="shortcode-item">
+                        <code>[mochileros_deals_premium]contenido[/mochileros_deals_premium]</code>
+                        <p>Contenido protegido para suscriptores</p>
                     </div>
                 </div>
             </div>
         </div>
         
-        <style>
-        .mtd-admin-dashboard {
-            max-width: 1200px;
-        }
-        .mtd-stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin: 20px 0;
-        }
-        .mtd-stat-card {
-            background: white;
-            border: 1px solid #ccd0d4;
-            border-radius: 4px;
-            padding: 20px;
-            box-shadow: 0 1px 1px rgba(0,0,0,.04);
-        }
-        .mtd-stat-card h3 {
-            margin: 0 0 10px 0;
-            font-size: 14px;
-            color: #646970;
-        }
-        .mtd-stat-number {
-            font-size: 32px;
-            font-weight: 600;
-            color: #1d2327;
-        }
-        .mtd-stat-text {
-            font-size: 16px;
-            color: #1d2327;
-        }
-        .mtd-actions, .mtd-shortcodes {
-            background: white;
-            border: 1px solid #ccd0d4;
-            border-radius: 4px;
-            padding: 20px;
-            margin: 20px 0;
-        }
-        .mtd-shortcode-list {
-            display: grid;
-            gap: 10px;
-        }
-        .mtd-shortcode-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px;
-            background: #f6f7f7;
-            border-radius: 4px;
-        }
-        .mtd-shortcode-item code {
-            background: #2271b1;
-            color: white;
-            padding: 4px 8px;
-            border-radius: 3px;
-            font-size: 12px;
-        }
-        </style>
-        
         <script>
-        function mtdTestAPI() {
-            const statusDiv = document.getElementById('mtd-api-status');
-            statusDiv.innerHTML = '<span class="spinner is-active"></span> Probando...';
-            
-            jQuery.post(ajaxurl, {
-                action: 'mtd_test_api',
-                nonce: '<?php echo wp_create_nonce('mtd_nonce'); ?>'
-            }, function(response) {
-                if (response.success) {
-                    statusDiv.innerHTML = '<span style="color: green;">✅ Conectado</span>';
-                    document.getElementById('mtd-active-deals').textContent = response.data.deals || '0';
-                    document.getElementById('mtd-last-update').textContent = new Date().toLocaleString();
-                } else {
-                    statusDiv.innerHTML = '<span style="color: red;">❌ Error: ' + response.data + '</span>';
-                }
+        jQuery(document).ready(function($) {
+            // Probar conexión API
+            $('#test-api').click(function() {
+                $('#api-status').text('Probando...');
+                $.get('<?php echo $this->api_url; ?>/api/health')
+                    .done(function(data) {
+                        $('#api-status').html('<span style="color: green;">✓ Conectado</span>');
+                        $('#ai-status').text(data.ai === 'available' ? '✓ Activa' : '✗ Inactiva');
+                    })
+                    .fail(function() {
+                        $('#api-status').html('<span style="color: red;">✗ Error de conexión</span>');
+                    });
             });
-        }
-        
-        function mtdIngestDeals() {
-            alert('Función de ingesta ejecutada (demo)');
-        }
-        
-        function mtdTestExtraction() {
-            const testContent = 'Madrid París 89€ - Vuelo directo con Vueling';
-            alert('Probando extracción IA con: ' + testContent);
-        }
+            
+            // Sincronizar ofertas
+            $('#sync-deals').click(function() {
+                $(this).text('Sincronizando...');
+                $.post('<?php echo $this->api_url; ?>/api/ingest', {})
+                    .done(function(data) {
+                        $('#deals-count').text(data.total || 0);
+                        $('#sync-deals').text('Sincronizar Ofertas');
+                        alert('Ofertas sincronizadas: ' + (data.total || 0));
+                    })
+                    .fail(function() {
+                        $('#sync-deals').text('Sincronizar Ofertas');
+                        alert('Error al sincronizar ofertas');
+                    });
+            });
+            
+            // Auto-verificar al cargar
+            $('#test-api').click();
+        });
         </script>
         <?php
     }
@@ -234,213 +193,83 @@ class MochilerosTravelDeals {
         ?>
         <div class="wrap">
             <h1>Configuración - Mochileros Deals</h1>
-            
             <form method="post" action="options.php">
-                <?php settings_fields('mtd_settings'); ?>
-                <?php do_settings_sections('mtd_settings'); ?>
-                
+                <?php
+                settings_fields('mochileros_deals_settings');
+                do_settings_sections('mochileros_deals_settings');
+                ?>
                 <table class="form-table">
                     <tr>
                         <th scope="row">URL de la API</th>
                         <td>
-                            <input type="url" name="mtd_api_url" value="<?php echo esc_attr(get_option('mtd_api_url', 'https://v0-travel-community-creation.vercel.app')); ?>" class="regular-text" />
-                            <p class="description">URL base de tu API Next.js desplegada en Vercel</p>
+                            <input type="url" name="mochileros_api_url" value="<?php echo esc_attr($this->api_url); ?>" class="regular-text" />
+                            <p class="description">URL base de tu API Next.js (ej: https://v0-travel-community-creation.vercel.app)</p>
                         </td>
                     </tr>
                     <tr>
                         <th scope="row">Token de API</th>
                         <td>
-                            <input type="text" name="mtd_api_token" value="<?php echo esc_attr(get_option('mtd_api_token')); ?>" class="regular-text" />
-                            <p class="description">Token de seguridad para la API (opcional pero recomendado)</p>
+                            <input type="text" name="mochileros_api_token" value="<?php echo esc_attr($this->api_token); ?>" class="regular-text" />
+                            <p class="description">Token de seguridad para la API (opcional)</p>
                         </td>
                     </tr>
                     <tr>
-                        <th scope="row">Página Premium</th>
+                        <th scope="row">Habilitar IA</th>
                         <td>
-                            <?php wp_dropdown_pages(array(
-                                'name' => 'mtd_premium_page',
-                                'selected' => get_option('mtd_premium_page'),
-                                'show_option_none' => 'Seleccionar página...'
-                            )); ?>
-                            <p class="description">Página donde redirigir a usuarios premium</p>
+                            <input type="checkbox" name="mochileros_enable_ai" value="1" <?php checked(get_option('mochileros_enable_ai'), 1); ?> />
+                            <p class="description">Activar extracción automática con IA</p>
                         </td>
                     </tr>
                     <tr>
-                        <th scope="row">Página de Registro</th>
+                        <th scope="row">Fuente por defecto</th>
                         <td>
-                            <?php wp_dropdown_pages(array(
-                                'name' => 'mtd_signup_page',
-                                'selected' => get_option('mtd_signup_page'),
-                                'show_option_none' => 'Seleccionar página...'
-                            )); ?>
-                            <p class="description">Página de registro/pricing</p>
+                            <select name="mochileros_default_source">
+                                <option value="all" <?php selected(get_option('mochileros_default_source'), 'all'); ?>>Todas las fuentes</option>
+                                <option value="secretflying" <?php selected(get_option('mochileros_default_source'), 'secretflying'); ?>>Secret Flying</option>
+                                <option value="viajerospiratas" <?php selected(get_option('mochileros_default_source'), 'viajerospiratas'); ?>>Viajeros Piratas</option>
+                                <option value="traveldealz" <?php selected(get_option('mochileros_default_source'), 'traveldealz'); ?>>Travel Dealz</option>
+                            </select>
                         </td>
                     </tr>
                 </table>
-                
                 <?php submit_button(); ?>
             </form>
-            
-            <div class="mtd-help-section">
-                <h2>Ayuda de Configuración</h2>
-                <div class="mtd-help-grid">
-                    <div class="mtd-help-card">
-                        <h3>🔗 URL de API</h3>
-                        <p>Debe ser la URL completa de tu proyecto Vercel:</p>
-                        <code>https://tu-proyecto.vercel.app</code>
-                    </div>
-                    <div class="mtd-help-card">
-                        <h3>🔑 Token de API</h3>
-                        <p>Token de seguridad configurado en las variables de entorno de Vercel:</p>
-                        <code>AI_PROXY_TOKEN</code>
-                    </div>
-                    <div class="mtd-help-card">
-                        <h3>📄 Páginas</h3>
-                        <p>Crea páginas en WordPress y asígnalas aquí para el flujo de usuario.</p>
-                    </div>
-                </div>
-            </div>
         </div>
-        
-        <style>
-        .mtd-help-section {
-            margin-top: 40px;
-            padding-top: 20px;
-            border-top: 1px solid #ccd0d4;
-        }
-        .mtd-help-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-            margin: 20px 0;
-        }
-        .mtd-help-card {
-            background: #f8f9fa;
-            border: 1px solid #e1e5e9;
-            border-radius: 6px;
-            padding: 20px;
-        }
-        .mtd-help-card h3 {
-            margin: 0 0 10px 0;
-            color: #1d2327;
-        }
-        .mtd-help-card code {
-            background: #2271b1;
-            color: white;
-            padding: 2px 6px;
-            border-radius: 3px;
-            font-size: 12px;
-        }
-        </style>
         <?php
-    }
-    
-    public function test_api_connection() {
-        check_ajax_referer('mtd_nonce', 'nonce');
-        
-        $response = wp_remote_get($this->api_url . '/api/health');
-        
-        if (is_wp_error($response)) {
-            wp_send_json_error('Error de conexión: ' . $response->get_error_message());
-        }
-        
-        $body = wp_remote_retrieve_body($response);
-        $data = json_decode($body, true);
-        
-        if ($data && isset($data['status']) && $data['status'] === 'ok') {
-            wp_send_json_success(array(
-                'message' => 'API conectada correctamente',
-                'deals' => rand(15, 45), // Simulado
-                'ai_status' => $data['ai'] ?? 'unknown'
-            ));
-        } else {
-            wp_send_json_error('API no responde correctamente');
-        }
-    }
-    
-    public function extract_deal_data() {
-        check_ajax_referer('mtd_nonce', 'nonce');
-        
-        $title = sanitize_text_field($_POST['title'] ?? '');
-        $content = sanitize_textarea_field($_POST['content'] ?? '');
-        
-        if (empty($title) || empty($content)) {
-            wp_send_json_error('Título y contenido son requeridos');
-        }
-        
-        $api_data = array(
-            'title' => $title,
-            'text' => $content,
-            'source' => 'wordpress',
-            'url' => get_permalink()
-        );
-        
-        $headers = array(
-            'Content-Type' => 'application/json'
-        );
-        
-        if (!empty($this->api_token)) {
-            $headers['x-ai-proxy-token'] = $this->api_token;
-        }
-        
-        $response = wp_remote_post($this->api_url . '/api/wp/ai-extract', array(
-            'headers' => $headers,
-            'body' => json_encode($api_data),
-            'timeout' => 30
-        ));
-        
-        if (is_wp_error($response)) {
-            wp_send_json_error('Error de API: ' . $response->get_error_message());
-        }
-        
-        $body = wp_remote_retrieve_body($response);
-        $data = json_decode($body, true);
-        
-        if ($data && isset($data['success']) && $data['success']) {
-            wp_send_json_success($data['data']);
-        } else {
-            wp_send_json_error('Error en extracción IA: ' . ($data['message'] ?? 'Unknown error'));
-        }
     }
     
     // Shortcode: Hero de registro
     public function deals_signup_shortcode($atts) {
         $atts = shortcode_atts(array(
-            'title' => 'Ofertas Premium de Viaje',
-            'subtitle' => 'Accede a errores de tarifa y ofertas exclusivas',
-            'button_text' => 'Ver Ofertas Premium',
-            'price' => '€1.99/mes'
+            'title' => 'Únete a la Comunidad Premium',
+            'subtitle' => 'Accede a ofertas exclusivas de viaje',
+            'button_text' => 'Ver Planes Premium',
+            'button_url' => $this->api_url . '/pricing'
         ), $atts);
-        
-        $signup_page = get_option('mtd_signup_page');
-        $signup_url = $signup_page ? get_permalink($signup_page) : $this->api_url . '/pricing';
         
         ob_start();
         ?>
-        <div class="mtd-signup-hero">
-            <div class="mtd-hero-content">
-                <h1 class="mtd-hero-title"><?php echo esc_html($atts['title']); ?></h1>
-                <p class="mtd-hero-subtitle"><?php echo esc_html($atts['subtitle']); ?></p>
-                <div class="mtd-hero-features">
-                    <div class="mtd-feature">
-                        <span class="mtd-feature-icon">✈️</span>
-                        <span>Errores de tarifa verificados</span>
+        <div class="mochileros-signup-hero">
+            <div class="hero-content">
+                <h2><?php echo esc_html($atts['title']); ?></h2>
+                <p><?php echo esc_html($atts['subtitle']); ?></p>
+                <div class="hero-features">
+                    <div class="feature">
+                        <span class="feature-icon">✈️</span>
+                        <span>Ofertas exclusivas</span>
                     </div>
-                    <div class="mtd-feature">
-                        <span class="mtd-feature-icon">⚡</span>
-                        <span>Alertas en tiempo real</span>
+                    <div class="feature">
+                        <span class="feature-icon">🤖</span>
+                        <span>IA avanzada</span>
                     </div>
-                    <div class="mtd-feature">
-                        <span class="mtd-feature-icon">🎯</span>
-                        <span>Ofertas personalizadas</span>
+                    <div class="feature">
+                        <span class="feature-icon">⚡</span>
+                        <span>Alertas instantáneas</span>
                     </div>
                 </div>
-                <div class="mtd-hero-cta">
-                    <a href="<?php echo esc_url($signup_url); ?>" class="mtd-cta-button">
-                        <?php echo esc_html($atts['button_text']); ?>
-                    </a>
-                    <span class="mtd-price">Desde <?php echo esc_html($atts['price']); ?></span>
-                </div>
+                <a href="<?php echo esc_url($atts['button_url']); ?>" class="mochileros-cta-button" target="_blank">
+                    <?php echo esc_html($atts['button_text']); ?>
+                </a>
             </div>
         </div>
         <?php
@@ -451,154 +280,282 @@ class MochilerosTravelDeals {
     public function deals_dashboard_shortcode($atts) {
         $atts = shortcode_atts(array(
             'limit' => '6',
-            'source' => 'all'
+            'source' => 'all',
+            'show_filters' => 'true'
         ), $atts);
         
         ob_start();
         ?>
-        <div class="mtd-deals-dashboard">
-            <div class="mtd-dashboard-header">
-                <h2>Ofertas Premium Activas</h2>
-                <div class="mtd-dashboard-filters">
-                    <select id="mtd-source-filter">
-                        <option value="all">Todas las fuentes</option>
-                        <option value="secretflying">Secret Flying</option>
-                        <option value="viajerospiratas">Viajeros Piratas</option>
-                        <option value="traveldealz">Travel Dealz</option>
-                    </select>
-                </div>
+        <div class="mochileros-dashboard" data-limit="<?php echo esc_attr($atts['limit']); ?>" data-source="<?php echo esc_attr($atts['source']); ?>">
+            <?php if ($atts['show_filters'] === 'true'): ?>
+            <div class="dashboard-filters">
+                <select id="source-filter">
+                    <option value="all">Todas las fuentes</option>
+                    <option value="secretflying">Secret Flying</option>
+                    <option value="viajerospiratas">Viajeros Piratas</option>
+                    <option value="traveldealz">Travel Dealz</option>
+                </select>
+                <select id="type-filter">
+                    <option value="all">Todos los tipos</option>
+                    <option value="error">Errores de Tarifa</option>
+                    <option value="flash">Ofertas Flash</option>
+                    <option value="promo">Promociones</option>
+                </select>
+                <button id="refresh-deals" class="button">Actualizar</button>
             </div>
+            <?php endif; ?>
             
-            <div id="mtd-deals-grid" class="mtd-deals-grid">
-                <div class="mtd-loading">
-                    <span class="mtd-spinner"></span>
-                    <p>Cargando ofertas premium...</p>
-                </div>
+            <div id="deals-container" class="deals-grid">
+                <div class="loading">Cargando ofertas...</div>
             </div>
         </div>
         
         <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            mtdLoadDeals();
-        });
-        
-        function mtdLoadDeals() {
-            const grid = document.getElementById('mtd-deals-grid');
-            const apiUrl = '<?php echo esc_js($this->api_url); ?>';
-            
-            fetch(apiUrl + '/api/wordpress/deals-feed?limit=<?php echo esc_js($atts['limit']); ?>&source=<?php echo esc_js($atts['source']); ?>')
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success && data.deals) {
-                        grid.innerHTML = data.deals.map(deal => `
-                            <div class="mtd-deal-card">
-                                <div class="mtd-deal-header">
-                                    <span class="mtd-deal-type ${deal.type.toLowerCase().replace(' ', '-')}">${deal.type}</span>
-                                    <span class="mtd-deal-source">${deal.source}</span>
+        jQuery(document).ready(function($) {
+            function loadDeals() {
+                const container = $('#deals-container');
+                const limit = $('.mochileros-dashboard').data('limit');
+                const source = $('#source-filter').val() || $('.mochileros-dashboard').data('source');
+                
+                container.html('<div class="loading">Cargando ofertas...</div>');
+                
+                $.get('<?php echo $this->api_url; ?>/api/wordpress/deals-feed', {
+                    limit: limit,
+                    source: source
+                })
+                .done(function(data) {
+                    if (data.success && data.deals.length > 0) {
+                        let html = '';
+                        data.deals.forEach(function(deal) {
+                            const savings = deal.originalPrice - deal.price;
+                            const expiresAt = new Date(deal.expiresAt);
+                            const now = new Date();
+                            const hoursLeft = Math.max(0, Math.floor((expiresAt - now) / (1000 * 60 * 60)));
+                            
+                            html += `
+                                <div class="deal-card">
+                                    <div class="deal-header">
+                                        <span class="deal-type">${deal.type}</span>
+                                        <span class="deal-source">${deal.source}</span>
+                                    </div>
+                                    <div class="deal-route">
+                                        <span class="city">${deal.cities.fromCity}</span>
+                                        <span class="arrow">→</span>
+                                        <span class="city">${deal.cities.toCity}</span>
+                                    </div>
+                                    <div class="deal-price">
+                                        <span class="current-price">${deal.price}€</span>
+                                        ${deal.originalPrice ? `<span class="original-price">${deal.originalPrice}€</span>` : ''}
+                                        ${savings > 0 ? `<span class="savings">Ahorra ${savings}€</span>` : ''}
+                                    </div>
+                                    <div class="deal-details">
+                                        <p><strong>Aerolínea:</strong> ${deal.airline}</p>
+                                        <p><strong>Fechas:</strong> ${deal.dates}</p>
+                                        ${hoursLeft > 0 ? `<p class="expires"><strong>Expira en:</strong> ${hoursLeft}h</p>` : ''}
+                                    </div>
+                                    <a href="${deal.url}" target="_blank" class="deal-button">Ver Oferta</a>
                                 </div>
-                                <h3 class="mtd-deal-title">${deal.title}</h3>
-                                <div class="mtd-deal-route">
-                                    <span class="mtd-route-from">${deal.cities.fromCity}</span>
-                                    <span class="mtd-route-arrow">→</span>
-                                    <span class="mtd-route-to">${deal.cities.toCity}</span>
-                                </div>
-                                <div class="mtd-deal-price">
-                                    <span class="mtd-current-price">${deal.price}${deal.currency}</span>
-                                    ${deal.originalPrice ? `<span class="mtd-original-price">${deal.originalPrice}${deal.currency}</span>` : ''}
-                                    ${deal.discountPct ? `<span class="mtd-discount">-${deal.discountPct}%</span>` : ''}
-                                </div>
-                                <div class="mtd-deal-details">
-                                    <span class="mtd-airline">${deal.airline}</span>
-                                    <span class="mtd-dates">${deal.dates}</span>
-                                </div>
-                                <a href="${deal.url}" target="_blank" class="mtd-deal-button">Ver Oferta</a>
-                            </div>
-                        `).join('');
+                            `;
+                        });
+                        container.html(html);
                     } else {
-                        grid.innerHTML = '<p class="mtd-no-deals">No hay ofertas disponibles en este momento.</p>';
+                        container.html('<div class="no-deals">No se encontraron ofertas</div>');
                     }
                 })
-                .catch(error => {
-                    console.error('Error loading deals:', error);
-                    grid.innerHTML = '<p class="mtd-error">Error cargando ofertas. Inténtalo más tarde.</p>';
+                .fail(function() {
+                    container.html('<div class="error">Error al cargar ofertas</div>');
                 });
-        }
+            }
+            
+            // Cargar ofertas al inicio
+            loadDeals();
+            
+            // Eventos de filtros
+            $('#source-filter, #type-filter').change(loadDeals);
+            $('#refresh-deals').click(loadDeals);
+        });
         </script>
         <?php
         return ob_get_clean();
     }
     
     // Shortcode: Contenido premium
-    public function deals_premium_shortcode($atts, $content = '') {
+    public function premium_content_shortcode($atts, $content = null) {
         $atts = shortcode_atts(array(
-            'message' => 'Este contenido es exclusivo para miembros premium'
+            'plan' => 'premium',
+            'message' => 'Este contenido es exclusivo para suscriptores premium.'
         ), $atts);
         
-        // Aquí verificarías si el usuario tiene suscripción activa
-        $is_premium = false; // Simplificado para demo
+        // Verificar suscripción (simulado)
+        $user_email = wp_get_current_user()->user_email;
+        $has_subscription = $this->check_user_subscription($user_email);
         
-        if ($is_premium) {
+        if ($has_subscription) {
             return do_shortcode($content);
         } else {
-            $signup_page = get_option('mtd_signup_page');
-            $signup_url = $signup_page ? get_permalink($signup_page) : $this->api_url . '/pricing';
-            
             ob_start();
             ?>
-            <div class="mtd-premium-gate">
-                <div class="mtd-premium-icon">🔒</div>
-                <h3>Contenido Premium</h3>
-                <p><?php echo esc_html($atts['message']); ?></p>
-                <a href="<?php echo esc_url($signup_url); ?>" class="mtd-premium-button">
-                    Acceder Premium
-                </a>
+            <div class="mochileros-premium-gate">
+                <div class="premium-message">
+                    <h3>🔒 Contenido Premium</h3>
+                    <p><?php echo esc_html($atts['message']); ?></p>
+                    <a href="<?php echo $this->api_url; ?>/pricing" class="premium-upgrade-btn" target="_blank">
+                        Actualizar a Premium
+                    </a>
+                </div>
             </div>
             <?php
             return ob_get_clean();
         }
     }
-}
-
-// Inicializar plugin
-new MochilerosTravelDeals();
-
-// Hook de activación
-register_activation_hook(__FILE__, 'mtd_activate');
-function mtd_activate() {
-    // Configuración inicial
-    add_option('mtd_api_url', 'https://v0-travel-community-creation.vercel.app');
-    add_option('mtd_api_token', '');
     
-    // Crear páginas por defecto si no existen
-    $pages = array(
-        'premium' => array(
-            'title' => 'Ofertas Premium',
-            'content' => '[mochileros_deals_dashboard]'
-        ),
-        'signup' => array(
-            'title' => 'Registro Premium',
-            'content' => '[mochileros_deals_signup]'
-        )
-    );
+    // Shortcode: Feed de ofertas
+    public function deals_feed_shortcode($atts) {
+        $atts = shortcode_atts(array(
+            'limit' => '3',
+            'source' => 'all',
+            'layout' => 'grid'
+        ), $atts);
+        
+        ob_start();
+        ?>
+        <div class="mochileros-deals-feed" data-limit="<?php echo esc_attr($atts['limit']); ?>" data-source="<?php echo esc_attr($atts['source']); ?>" data-layout="<?php echo esc_attr($atts['layout']); ?>">
+            <div class="deals-loading">Cargando ofertas...</div>
+        </div>
+        
+        <script>
+        jQuery(document).ready(function($) {
+            const feedContainer = $('.mochileros-deals-feed');
+            const limit = feedContainer.data('limit');
+            const source = feedContainer.data('source');
+            const layout = feedContainer.data('layout');
+            
+            $.get('<?php echo $this->api_url; ?>/api/wordpress/deals-feed', {
+                limit: limit,
+                source: source
+            })
+            .done(function(data) {
+                if (data.success && data.deals.length > 0) {
+                    let html = `<div class="deals-${layout}">`;
+                    data.deals.forEach(function(deal) {
+                        html += `
+                            <div class="deal-item">
+                                <div class="deal-info">
+                                    <h4>${deal.title}</h4>
+                                    <p class="deal-price">${deal.price}€</p>
+                                    <p class="deal-route">${deal.cities.fromCity} → ${deal.cities.toCity}</p>
+                                </div>
+                                <a href="${deal.url}" target="_blank" class="deal-link">Ver Oferta</a>
+                            </div>
+                        `;
+                    });
+                    html += '</div>';
+                    feedContainer.html(html);
+                } else {
+                    feedContainer.html('<div class="no-deals">No hay ofertas disponibles</div>');
+                }
+            })
+            .fail(function() {
+                feedContainer.html('<div class="error">Error al cargar ofertas</div>');
+            });
+        });
+        </script>
+        <?php
+        return ob_get_clean();
+    }
     
-    foreach ($pages as $key => $page_data) {
-        $existing = get_page_by_title($page_data['title']);
-        if (!$existing) {
-            $page_id = wp_insert_post(array(
-                'post_title' => $page_data['title'],
-                'post_content' => $page_data['content'],
+    // Verificar suscripción del usuario
+    private function check_user_subscription($email) {
+        if (empty($email)) {
+            return false;
+        }
+        
+        // Hacer petición a la API para verificar suscripción
+        $response = wp_remote_post($this->api_url . '/api/wordpress/subscription-check', array(
+            'body' => json_encode(array('email' => $email)),
+            'headers' => array(
+                'Content-Type' => 'application/json',
+                'x-ai-proxy-token' => $this->api_token
+            )
+        ));
+        
+        if (is_wp_error($response)) {
+            return false;
+        }
+        
+        $body = wp_remote_retrieve_body($response);
+        $data = json_decode($body, true);
+        
+        return isset($data['subscription']['active']) && $data['subscription']['active'];
+    }
+    
+    public function activate() {
+        // Configuración por defecto
+        add_option('mochileros_api_url', 'https://v0-travel-community-creation.vercel.app');
+        add_option('mochileros_api_token', '');
+        add_option('mochileros_enable_ai', 1);
+        add_option('mochileros_default_source', 'all');
+        
+        // Crear páginas necesarias
+        $this->create_default_pages();
+    }
+    
+    public function deactivate() {
+        // Limpiar cache si es necesario
+        wp_cache_flush();
+    }
+    
+    private function create_default_pages() {
+        // Crear página de ofertas si no existe
+        $deals_page = get_page_by_title('Ofertas Premium');
+        if (!$deals_page) {
+            wp_insert_post(array(
+                'post_title' => 'Ofertas Premium',
+                'post_content' => '[mochileros_deals_dashboard]',
                 'post_status' => 'publish',
                 'post_type' => 'page'
             ));
-            
-            update_option('mtd_' . $key . '_page', $page_id);
+        }
+        
+        // Crear página de registro si no existe
+        $signup_page = get_page_by_title('Únete Premium');
+        if (!$signup_page) {
+            wp_insert_post(array(
+                'post_title' => 'Únete Premium',
+                'post_content' => '[mochileros_deals_signup]',
+                'post_status' => 'publish',
+                'post_type' => 'page'
+            ));
         }
     }
 }
 
-// Hook de desactivación
-register_deactivation_hook(__FILE__, 'mtd_deactivate');
-function mtd_deactivate() {
-    // Limpiar tareas programadas si las hay
+// Inicializar el plugin
+new MochilerosTravelDeals();
+
+// Hook para AJAX si es necesario
+add_action('wp_ajax_mochileros_sync_deals', 'mochileros_sync_deals_callback');
+add_action('wp_ajax_nopriv_mochileros_sync_deals', 'mochileros_sync_deals_callback');
+
+function mochileros_sync_deals_callback() {
+    // Verificar nonce
+    if (!wp_verify_nonce($_POST['nonce'], 'mochileros_nonce')) {
+        wp_die('Nonce verification failed');
+    }
+    
+    // Hacer petición a la API de ingesta
+    $api_url = get_option('mochileros_api_url', 'https://v0-travel-community-creation.vercel.app');
+    $response = wp_remote_post($api_url . '/api/ingest', array(
+        'body' => json_encode(array('sources' => array('secretflying', 'viajerospiratas', 'traveldealz'))),
+        'headers' => array('Content-Type' => 'application/json')
+    ));
+    
+    if (is_wp_error($response)) {
+        wp_send_json_error('Error connecting to API');
+    } else {
+        $body = wp_remote_retrieve_body($response);
+        $data = json_decode($body, true);
+        wp_send_json_success($data);
+    }
 }
 ?>
