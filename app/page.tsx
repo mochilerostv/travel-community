@@ -6,7 +6,7 @@ import Link from "next/link"
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
       {/* Header */}
       <header className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
@@ -15,17 +15,11 @@ export default function HomePage() {
             <h1 className="text-2xl font-bold text-gray-900">TravelDeals Pro</h1>
           </div>
           <nav className="hidden md:flex items-center gap-6">
-            <Link href="#features" className="text-gray-600 hover:text-blue-600">
-              Características
-            </Link>
-            <Link href="#pricing" className="text-gray-600 hover:text-blue-600">
-              Precios
-            </Link>
             <Link href="/api/health" className="text-gray-600 hover:text-blue-600">
               API Status
             </Link>
             <Button asChild>
-              <Link href="/api/health">Ver API</Link>
+              <Link href="/api/health">Probar API</Link>
             </Button>
           </nav>
         </div>
@@ -34,21 +28,17 @@ export default function HomePage() {
       {/* Hero Section */}
       <section className="py-20 px-4">
         <div className="container mx-auto text-center">
-          <Badge className="mb-4 bg-blue-100 text-blue-800 hover:bg-blue-100">🚀 API de Ofertas con IA</Badge>
+          <Badge className="mb-4 bg-blue-100 text-blue-800 hover:bg-blue-100">🚀 API Funcionando</Badge>
           <h2 className="text-5xl font-bold text-gray-900 mb-6">
-            Extrae Ofertas de Viajes
-            <span className="text-blue-600"> con Inteligencia Artificial</span>
+            TravelDeals Pro
+            <span className="text-blue-600"> API Activa</span>
           </h2>
           <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
-            API completa para extraer y procesar ofertas de viajes usando OpenAI. Perfecta para integrar con WordPress y
-            automatizar la detección de chollos.
+            API completa para extraer y procesar ofertas de viajes usando OpenAI. Perfecta para integrar con WordPress.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button size="lg" className="text-lg px-8 py-4" asChild>
               <Link href="/api/health">Probar API</Link>
-            </Button>
-            <Button size="lg" variant="outline" className="text-lg px-8 py-4 bg-transparent">
-              Ver Documentación
             </Button>
           </div>
 
@@ -195,68 +185,12 @@ export default function HomePage() {
 
       {/* Footer */}
       <footer className="bg-gray-900 text-white py-12 px-4">
-        <div className="container mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            <div>
-              <div className="flex items-center gap-2 mb-4">
-                <Plane className="h-6 w-6" />
-                <span className="text-xl font-bold">TravelDeals API</span>
-              </div>
-              <p className="text-gray-400">API de extracción de ofertas de viajes con inteligencia artificial.</p>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4">API</h4>
-              <ul className="space-y-2 text-gray-400">
-                <li>
-                  <Link href="/api/health" className="hover:text-white">
-                    Health Check
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#" className="hover:text-white">
-                    Documentación
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#" className="hover:text-white">
-                    Ejemplos
-                  </Link>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4">Recursos</h4>
-              <ul className="space-y-2 text-gray-400">
-                <li>
-                  <Link href="#" className="hover:text-white">
-                    Plugin WordPress
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#" className="hover:text-white">
-                    Guía de Despliegue
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#" className="hover:text-white">
-                    Soporte
-                  </Link>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4">Tecnología</h4>
-              <ul className="space-y-2 text-gray-400">
-                <li>Next.js 14</li>
-                <li>OpenAI GPT-4</li>
-                <li>TypeScript</li>
-                <li>Vercel</li>
-              </ul>
-            </div>
+        <div className="container mx-auto text-center">
+          <div className="flex items-center justify-center gap-2 mb-4">
+            <Plane className="h-6 w-6" />
+            <span className="text-xl font-bold">TravelDeals Pro API</span>
           </div>
-          <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
-            <p>&copy; 2024 TravelDeals API. Proyecto open source.</p>
-          </div>
+          <p className="text-gray-400">API de extracción de ofertas de viajes con IA.</p>
         </div>
       </footer>
     </div>

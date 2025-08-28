@@ -6,8 +6,8 @@ import "./globals.css"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "TravelDeals Pro API",
-  description: "API de extracción de ofertas de viajes con IA",
+  title: "TravelDeals Pro",
+  description: "API de ofertas de viajes con IA",
     generator: 'v0.app'
 }
 
