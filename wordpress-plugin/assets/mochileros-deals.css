@@ -1,0 +1,57 @@
+/* Estilos del plugin */
+.mochileros-deals-signup {
+  background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+  color: white;
+  padding: 2rem;
+  border-radius: 12px;
+  text-align: center;
+  margin: 2rem 0;
+}
+
+.mochileros-deals-signup h2 {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+}
+
+.signup-button {
+  display: inline-block;
+  background: #4ade80;
+  color: #1e3c72;
+  padding: 1rem 2rem;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: bold;
+  margin-top: 1rem;
+}
+
+.signup-button:hover {
+  background: #22c55e;
+  text-decoration: none;
+}
+
+.mochileros-deals-dashboard {
+  background: white;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  margin: 2rem 0;
+}
+
+.premium-locked {
+  background: #f8f9fa;
+  border: 2px dashed #dee2e6;
+  padding: 2rem;
+  text-align: center;
+  border-radius: 8px;
+  margin: 2rem 0;
+}
+
+@media (max-width: 768px) {
+  .mochileros-deals-signup {
+    padding: 1.5rem;
+  }
+
+  .mochileros-deals-signup h2 {
+    font-size: 1.5rem;
+  }
+}

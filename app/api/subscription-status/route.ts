@@ -5,74 +5,101 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: "2024-06-20",
 })
 
-export async function POST(request: NextRequest) {
+export async function POST(req: NextRequest) {
   try {
-    const { sessionId, customerId, subscriptionId } = await request.json()
+    const { customerId, email } = await req.json()
 
+    // Verificar que tenemos Stripe configurado
     if (!process.env.STRIPE_SECRET_KEY) {
       return NextResponse.json({
-        success: false,
-        message: "Stripe no configurado",
-        subscription: null,
+        success: true,
+        subscription: {
+          active: false,
+          plan: null,
+          message: "Stripe no configurado - modo demo",
+        },
       })
     }
 
-    let subscription = null
+    let customer: Stripe.Customer | null = null
 
-    if (sessionId) {
-      // Obtener suscripción desde session ID
-      const session = await stripe.checkout.sessions.retrieve(sessionId)
-      if (session.subscription) {
-        subscription = await stripe.subscriptions.retrieve(session.subscription as string)
+    // Buscar cliente por ID o email
+    if (customerId) {
+      try {
+        customer = (await stripe.customers.retrieve(customerId)) as Stripe.Customer
+      } catch (error) {
+        console.log("Cliente no encontrado por ID:", customerId)
       }
-    } else if (subscriptionId) {
-      // Obtener suscripción directamente
-      subscription = await stripe.subscriptions.retrieve(subscriptionId)
-    } else if (customerId) {
-      // Obtener suscripciones del cliente
-      const subscriptions = await stripe.subscriptions.list({
-        customer: customerId,
-        status: "active",
+    }
+
+    if (!customer && email) {
+      const customers = await stripe.customers.list({
+        email,
         limit: 1,
       })
-      subscription = subscriptions.data[0] || null
+      customer = customers.data[0] || null
     }
 
-    if (!subscription) {
+    if (!customer) {
       return NextResponse.json({
-        success: false,
-        message: "Suscripción no encontrada",
-        subscription: null,
+        success: true,
+        subscription: {
+          active: false,
+          plan: null,
+          message: "Cliente no encontrado",
+        },
       })
     }
 
-    // Formatear datos de la suscripción
-    const subscriptionData = {
-      id: subscription.id,
-      status: subscription.status,
-      customerId: subscription.customer,
-      currentPeriodStart: new Date(subscription.current_period_start * 1000).toISOString(),
-      currentPeriodEnd: new Date(subscription.current_period_end * 1000).toISOString(),
-      plan: {
-        id: subscription.items.data[0]?.price.id,
-        amount: subscription.items.data[0]?.price.unit_amount,
-        currency: subscription.items.data[0]?.price.currency,
-        interval: subscription.items.data[0]?.price.recurring?.interval,
-      },
-      metadata: subscription.metadata,
+    // Obtener suscripciones del cliente
+    const subscriptions = await stripe.subscriptions.list({
+      customer: customer.id,
+      status: "active",
+      limit: 1,
+    })
+
+    const activeSubscription = subscriptions.data[0]
+
+    if (!activeSubscription) {
+      return NextResponse.json({
+        success: true,
+        subscription: {
+          active: false,
+          plan: null,
+          message: "Sin suscripción activa",
+        },
+      })
+    }
+
+    // Obtener detalles del plan
+    const priceId = activeSubscription.items.data[0]?.price.id
+    let planName = "unknown"
+
+    if (priceId === process.env.STRIPE_PRICE_ID_PREMIUM_MONTHLY) {
+      planName = "premium"
+    } else if (priceId === process.env.STRIPE_PRICE_ID_PREMIUM_PLUS_MONTHLY) {
+      planName = "premium_plus"
     }
 
     return NextResponse.json({
       success: true,
-      subscription: subscriptionData,
+      subscription: {
+        active: true,
+        plan: planName,
+        customerId: customer.id,
+        subscriptionId: activeSubscription.id,
+        currentPeriodEnd: new Date(activeSubscription.current_period_end * 1000).toISOString(),
+        status: activeSubscription.status,
+        message: "Suscripción activa",
+      },
     })
   } catch (error) {
     console.error("Subscription status error:", error)
     return NextResponse.json(
       {
         success: false,
-        message: error instanceof Error ? error.message : "Error obteniendo estado de suscripción",
-        subscription: null,
+        message: "Error verificando suscripción",
+        error: error instanceof Error ? error.message : "Unknown error",
       },
       { status: 500 },
     )
@@ -84,7 +111,7 @@ export async function GET() {
     success: true,
     message: "Endpoint de estado de suscripción",
     methods: ["POST"],
-    requiredFields: ["sessionId OR customerId OR subscriptionId"],
+    requiredFields: ["customerId o email"],
     timestamp: new Date().toISOString(),
   })
 }

@@ -5,10 +5,11 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: "2024-06-20",
 })
 
-export async function POST(request: NextRequest) {
+export async function POST(req: NextRequest) {
   try {
-    const { customerId, returnUrl } = await request.json()
+    const { customerId, returnUrl } = await req.json()
 
+    // Verificar que tenemos Stripe configurado
     if (!process.env.STRIPE_SECRET_KEY) {
       return NextResponse.json(
         {
@@ -16,16 +17,6 @@ export async function POST(request: NextRequest) {
           message: "Stripe no configurado",
         },
         { status: 500 },
-      )
-    }
-
-    if (!customerId) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: "Customer ID requerido",
-        },
-        { status: 400 },
       )
     }
 
@@ -44,7 +35,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         success: false,
-        message: error instanceof Error ? error.message : "Error creando portal del cliente",
+        message: "Error creando portal del cliente",
+        error: error instanceof Error ? error.message : "Unknown error",
       },
       { status: 500 },
     )
@@ -54,7 +46,7 @@ export async function POST(request: NextRequest) {
 export async function GET() {
   return NextResponse.json({
     success: true,
-    message: "Endpoint del portal del cliente",
+    message: "Endpoint del portal del cliente Stripe",
     methods: ["POST"],
     requiredFields: ["customerId"],
     optionalFields: ["returnUrl"],

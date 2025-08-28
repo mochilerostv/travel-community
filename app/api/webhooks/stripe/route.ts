@@ -5,19 +5,23 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: "2024-06-20",
 })
 
-const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!
-
-export async function POST(request: NextRequest) {
+export async function POST(req: NextRequest) {
   try {
-    const body = await request.text()
-    const signature = request.headers.get("stripe-signature")!
+    const body = await req.text()
+    const signature = req.headers.get("stripe-signature")!
+
+    // Verificar webhook signature
+    const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET
+    if (!webhookSecret) {
+      console.log("Webhook secret no configurado")
+      return NextResponse.json({ received: true })
+    }
 
     let event: Stripe.Event
-
     try {
       event = stripe.webhooks.constructEvent(body, signature, webhookSecret)
     } catch (err) {
-      console.error("Webhook signature verification failed:", err)
+      console.log("Webhook signature verification failed:", err)
       return NextResponse.json({ error: "Invalid signature" }, { status: 400 })
     }
 
@@ -25,47 +29,47 @@ export async function POST(request: NextRequest) {
     switch (event.type) {
       case "checkout.session.completed":
         const session = event.data.object as Stripe.Checkout.Session
-        console.log("Checkout session completed:", session.id)
+        console.log("Pago completado:", session.id)
         // Aquí activarías la suscripción del usuario
         break
 
       case "customer.subscription.created":
         const subscription = event.data.object as Stripe.Subscription
-        console.log("Subscription created:", subscription.id)
-        // Aquí crearías el registro del usuario en tu base de datos
+        console.log("Suscripción creada:", subscription.id)
         break
 
       case "customer.subscription.updated":
         const updatedSubscription = event.data.object as Stripe.Subscription
-        console.log("Subscription updated:", updatedSubscription.id)
-        // Aquí actualizarías el estado de la suscripción
+        console.log("Suscripción actualizada:", updatedSubscription.id)
         break
 
       case "customer.subscription.deleted":
         const deletedSubscription = event.data.object as Stripe.Subscription
-        console.log("Subscription deleted:", deletedSubscription.id)
-        // Aquí desactivarías el acceso del usuario
-        break
-
-      case "invoice.payment_succeeded":
-        const invoice = event.data.object as Stripe.Invoice
-        console.log("Payment succeeded:", invoice.id)
-        // Aquí confirmarías el pago exitoso
-        break
-
-      case "invoice.payment_failed":
-        const failedInvoice = event.data.object as Stripe.Invoice
-        console.log("Payment failed:", failedInvoice.id)
-        // Aquí manejarías el pago fallido
+        console.log("Suscripción cancelada:", deletedSubscription.id)
         break
 
       default:
-        console.log(`Unhandled event type: ${event.type}`)
+        console.log(`Evento no manejado: ${event.type}`)
     }
 
     return NextResponse.json({ received: true })
   } catch (error) {
     console.error("Webhook error:", error)
-    return NextResponse.json({ error: "Webhook error" }, { status: 500 })
+    return NextResponse.json(
+      {
+        error: "Webhook error",
+        message: error instanceof Error ? error.message : "Unknown error",
+      },
+      { status: 500 },
+    )
   }
+}
+
+export async function GET() {
+  return NextResponse.json({
+    message: "Stripe webhook endpoint",
+    methods: ["POST"],
+    description: "Maneja eventos de Stripe",
+    timestamp: new Date().toISOString(),
+  })
 }
