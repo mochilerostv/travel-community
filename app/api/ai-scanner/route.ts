@@ -1,123 +1,106 @@
-import { type NextRequest, NextResponse } from "next/server"
-import { generateText } from "ai"
-import { openai } from "@ai-sdk/openai"
+import { NextRequest, NextResponse } from 'next/server'
 
+// Mock AI price scanning service
 export async function POST(request: NextRequest) {
   try {
-    // Verificar token de seguridad (opcional)
-    const token = request.headers.get("x-ai-proxy-token")
-    const expectedToken = process.env.AI_PROXY_TOKEN
-
-    if (expectedToken && token !== expectedToken) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Token de autorización inválido",
-        },
-        { status: 401 },
-      )
-    }
-
-    // Verificar clave OpenAI
-    const openaiKey = process.env.OPENAI_API_KEY
-    if (!openaiKey) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Clave OpenAI no configurada",
-        },
-        { status: 500 },
-      )
-    }
-
-    // Obtener contenido del request
     const body = await request.json()
-    const { content } = body
+    const { action, settings } = body
 
-    if (!content) {
-      return NextResponse.json(
+    if (action === 'scan') {
+      // Simulate AI scanning process
+      await new Promise(resolve => setTimeout(resolve, 3000))
+
+      // Mock detected deals
+      const detectedDeals = [
         {
-          success: false,
-          error: "Contenido requerido",
+          source: 'Booking.com',
+          type: 'hotel',
+          title: 'Hotel Plaza - Roma',
+          originalPrice: 280,
+          currentPrice: 95,
+          discount: 66,
+          confidence: 0.95,
+          url: 'https://booking.com/hotel-plaza-roma'
         },
-        { status: 400 },
-      )
-    }
-
-    // Extraer información con IA
-    const { text } = await generateText({
-      model: openai("gpt-4o-mini"),
-      prompt: `
-        Analiza este contenido de viaje y extrae la información estructurada:
-        
-        Contenido: "${content}"
-        
-        Extrae SOLO si está claramente mencionado:
-        - Origen (ciudad/aeropuerto)
-        - Destino (ciudad/aeropuerto)  
-        - Precio (número)
-        - Moneda (EUR, USD, etc.)
-        - Tipo de oferta (flight, hotel, package)
-        - Fechas si están disponibles
-        
-        Responde en formato JSON válido:
         {
-          "origin": "ciudad o null",
-          "destination": "ciudad o null", 
-          "price": número o null,
-          "currency": "moneda o null",
-          "deal_type": "flight/hotel/package o null",
-          "dates": "fechas o null",
-          "is_deal": true/false
+          source: 'Skyscanner',
+          type: 'flight',
+          title: 'Madrid → Tokio',
+          originalPrice: 950,
+          currentPrice: 420,
+          discount: 56,
+          confidence: 0.88,
+          url: 'https://skyscanner.com/mad-nrt'
         }
-      `,
-    })
+      ]
 
-    // Parsear respuesta JSON
-    let extracted
-    try {
-      extracted = JSON.parse(text)
-    } catch (parseError) {
-      // Si no es JSON válido, crear estructura básica
-      extracted = {
-        origin: null,
-        destination: null,
-        price: null,
-        currency: null,
-        deal_type: null,
-        dates: null,
-        is_deal: false,
-        raw_analysis: text,
-      }
+      return NextResponse.json({
+        success: true,
+        message: 'Escaneo completado',
+        data: {
+          dealsFound: detectedDeals.length,
+          deals: detectedDeals,
+          scanTime: new Date().toISOString()
+        }
+      })
     }
 
-    return NextResponse.json({
-      success: true,
-      extracted,
-      original_content: content,
-      timestamp: new Date().toISOString(),
-    })
-  } catch (error) {
-    console.error("AI Extract error:", error)
+    if (action === 'configure') {
+      // Save AI configuration
+      // In a real implementation, save to database
+      
+      return NextResponse.json({
+        success: true,
+        message: 'Configuración de IA actualizada',
+        data: settings
+      })
+    }
+
     return NextResponse.json(
-      {
-        success: false,
-        error: error instanceof Error ? error.message : "Error desconocido",
-        timestamp: new Date().toISOString(),
+      { 
+        success: false, 
+        message: 'Acción no válida' 
       },
-      { status: 500 },
+      { status: 400 }
+    )
+
+  } catch (error) {
+    console.error('AI Scanner error:', error)
+    return NextResponse.json(
+      { 
+        success: false, 
+        message: 'Error en el sistema de IA' 
+      },
+      { status: 500 }
     )
   }
 }
 
-// Permitir OPTIONS para CORS
-export async function OPTIONS() {
-  return new NextResponse(null, {
-    status: 200,
-    headers: {
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Methods": "POST, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type, x-ai-proxy-token",
-    },
-  })
+export async function GET() {
+  try {
+    // Return AI system status
+    const status = {
+      active: true,
+      lastScan: new Date(Date.now() - 15 * 60 * 1000).toISOString(), // 15 minutes ago
+      dealsDetectedToday: 247,
+      sitesMonitored: 15,
+      accuracy: 98.5,
+      nextScan: new Date(Date.now() + 5 * 60 * 1000).toISOString() // 5 minutes from now
+    }
+
+    return NextResponse.json({
+      success: true,
+      data: status
+    })
+
+  } catch (error) {
+    console.error('Error getting AI status:', error)
+    return NextResponse.json(
+      { 
+        success: false, 
+        message: 'Error obteniendo estado de IA' 
+      },
+      { status: 500 }
+    )
+  }
 }

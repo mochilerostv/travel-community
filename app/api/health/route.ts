@@ -2,36 +2,43 @@ import { NextResponse } from "next/server"
 
 export async function GET() {
   try {
-    // Verificar variables de entorno
+    // Verificar variables de entorno críticas
     const openaiKey = process.env.OPENAI_API_KEY
     const aiToken = process.env.AI_PROXY_TOKEN
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL
 
-    return NextResponse.json({
-      success: true,
+    // Estado de la IA
+    let aiStatus = "unavailable"
+    if (openaiKey) {
+      aiStatus = openaiKey.startsWith("sk-") ? "available" : "invalid_key"
+    }
+
+    // Información del sistema
+    const healthData = {
       status: "ok",
-      message: "API funcionando correctamente",
       timestamp: new Date().toISOString(),
-      version: "1.4.0",
       environment: {
         openai: openaiKey ? "configured" : "missing",
         aiToken: aiToken ? "configured" : "missing",
-        baseUrl: baseUrl || "not-set",
-        nodeEnv: process.env.NODE_ENV || "unknown",
+        baseUrl: baseUrl || "auto-detected",
       },
-      ai: openaiKey ? "available" : "unavailable",
+      ai: aiStatus,
       endpoints: {
         health: "/api/health",
-        ai_extract: "/api/wp/ai-extract",
+        aiExtract: "/api/wp/ai-extract",
         ingest: "/api/ingest",
-        subscription_check: "/api/wordpress/subscription-check",
+        wordpress: {
+          subscriptionCheck: "/api/wordpress/subscription-check",
+          dealsFeed: "/api/wordpress/deals-feed",
+        },
       },
-    })
+      version: "1.0.0",
+    }
+
+    return NextResponse.json(healthData)
   } catch (error) {
-    console.error("Health check error:", error)
     return NextResponse.json(
       {
-        success: false,
         status: "error",
         message: error instanceof Error ? error.message : "Unknown error",
         timestamp: new Date().toISOString(),
@@ -39,4 +46,12 @@ export async function GET() {
       { status: 500 },
     )
   }
+}
+
+export async function POST() {
+  return NextResponse.json({
+    status: "ok",
+    message: "Health check endpoint - use GET method",
+    timestamp: new Date().toISOString(),
+  })
 }

@@ -1,43 +1,70 @@
 import { type NextRequest, NextResponse } from "next/server"
+import Stripe from "stripe"
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+  apiVersion: "2024-06-20",
+})
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json()
-    const { priceId, successUrl, cancelUrl } = body
+    const { priceId, email, successUrl, cancelUrl } = await request.json()
 
-    // Verificar que Stripe esté configurado
-    const stripeKey = process.env.STRIPE_SECRET_KEY
-    if (!stripeKey) {
+    if (!process.env.STRIPE_SECRET_KEY) {
       return NextResponse.json(
         {
           success: false,
-          error: "Stripe no configurado",
+          message: "Stripe no configurado",
         },
         { status: 500 },
       )
     }
 
-    // Simular creación de sesión de checkout
-    // En producción, aquí usarías la API real de Stripe
-    const mockSession = {
-      id: "cs_test_" + Math.random().toString(36).substr(2, 9),
-      url: successUrl || "https://example.com/success",
-      payment_status: "unpaid",
-      created: Math.floor(Date.now() / 1000),
+    if (!priceId) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Price ID requerido",
+        },
+        { status: 400 },
+      )
     }
+
+    // Crear sesión de checkout
+    const session = await stripe.checkout.sessions.create({
+      mode: "subscription",
+      payment_method_types: ["card"],
+      line_items: [
+        {
+          price: priceId,
+          quantity: 1,
+        },
+      ],
+      customer_email: email,
+      success_url: successUrl || `${process.env.NEXT_PUBLIC_BASE_URL}/dashboard?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: cancelUrl || `${process.env.NEXT_PUBLIC_BASE_URL}/pricing`,
+      metadata: {
+        email: email || "",
+        plan: priceId.includes("premium_plus") ? "premium_plus" : "premium",
+      },
+      subscription_data: {
+        metadata: {
+          email: email || "",
+          plan: priceId.includes("premium_plus") ? "premium_plus" : "premium",
+        },
+      },
+    })
 
     return NextResponse.json({
       success: true,
-      sessionId: mockSession.id,
-      url: mockSession.url,
-      message: "Sesión de checkout creada (modo demo)",
+      sessionId: session.id,
+      url: session.url,
     })
   } catch (error) {
     console.error("Checkout session error:", error)
     return NextResponse.json(
       {
         success: false,
-        error: error instanceof Error ? error.message : "Error creando sesión",
+        message: error instanceof Error ? error.message : "Error creando sesión de pago",
       },
       { status: 500 },
     )
@@ -47,9 +74,10 @@ export async function POST(request: NextRequest) {
 export async function GET() {
   return NextResponse.json({
     success: true,
-    message: "Endpoint de checkout activo",
+    message: "Endpoint de creación de sesiones de checkout",
     methods: ["POST"],
-    stripe_configured: !!process.env.STRIPE_SECRET_KEY,
+    requiredFields: ["priceId"],
+    optionalFields: ["email", "successUrl", "cancelUrl"],
     timestamp: new Date().toISOString(),
   })
 }
