@@ -60,8 +60,8 @@ export default function DashboardPage() {
   ]
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8 px-4">
-      <div className="container mx-auto max-w-6xl">
+    <div className="min-h-screen bg-gray-50 py-12 px-4">
+      <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-2">
@@ -102,9 +102,11 @@ export default function DashboardPage() {
         )}
 
         {/* Welcome Section */}
-        <div className="text-center mb-8">
-          <h2 className="text-4xl font-bold text-gray-900 mb-2">Panel de Control</h2>
-          <p className="text-gray-600">Descubre las mejores ofertas detectadas por nuestra IA</p>
+        <div className="bg-white rounded-lg p-8 shadow mb-8">
+          <h2 className="text-xl font-semibold mb-4">¡Bienvenido!</h2>
+          <p className="text-gray-600">
+            Tu suscripción está activa. Aquí podrás ver todas tus ofertas y configuraciones.
+          </p>
         </div>
 
         {/* Stats Cards */}
