@@ -45,7 +45,7 @@ export default function PricingPage() {
       name: "Premium",
       description: "Plan básico con todas las funciones esenciales",
       monthly: { price: "€1,99", priceId: "price_1S0wwGG5QzPmCFzEnfW842x5" },
-      yearly: { price: "€11,97", priceId: "price_1S1BqB7IrGsL9XwMjj6zZSrO", savings: "17%" }, // Usando el mismo por ahora
+      yearly: { price: "€11,97", priceId: "price_1RtbzWG5QzPmCFzEgqxaSHY1", savings: "17%" }, // Usando el mismo por ahora
       features: [
         "Alertas de errores de tarifa",
         "Chollos de hoteles verificados",
