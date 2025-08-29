@@ -45,7 +45,7 @@ export default function PricingPage() {
       name: "Premium",
       description: "Plan básico con todas las funciones esenciales",
       monthly: { price: "€1,99", priceId: "price_1S0wwGG5QzPmCFzEnfW842x5" },
-      yearly: { price: "€19,99", priceId: "price_1S0wwGG5QzPmCFzEnfW842x5", savings: "17%" }, // Usando el mismo por ahora
+      yearly: { price: "€11,97", priceId: "price_1S1BqB7IrGsL9XwMjj6zZSrO", savings: "17%" }, // Usando el mismo por ahora
       features: [
         "Alertas de errores de tarifa",
         "Chollos de hoteles verificados",
@@ -59,7 +59,7 @@ export default function PricingPage() {
       name: "Premium Plus",
       description: "Plan completo con funciones avanzadas",
       monthly: { price: "€2,49", priceId: "price_1S0wwzG5QzPmCFzEvMFd07Hg" },
-      yearly: { price: "€24,99", priceId: "price_1S0wwzG5QzPmCFzEvMFd07Hg", savings: "17%" }, // Usando el mismo por ahora
+      yearly: { price: "€22,97", priceId: "price_1S1Bpc7IrGsL9XwMTIGeYRTV", savings: "17%" }, // Usando el mismo por ahora
       features: [
         "Todo lo de Premium",
         "Alertas prioritarias",
