@@ -1,135 +1,191 @@
+import Link from "next/link"
+import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { CheckCircle, Clock, CreditCard } from "lucide-react"
+import { Plane, MapPin, Clock, TrendingDown, Star } from "lucide-react"
 
 export default function DashboardPage() {
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4">
-      <div className="max-w-6xl mx-auto">
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <header className="bg-white shadow-sm">
+        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
+          <div className="flex items-center space-x-2">
+            <Plane className="h-8 w-8 text-blue-600" />
+            <span className="text-2xl font-bold text-gray-900">Travel Community</span>
+          </div>
+          <nav className="hidden md:flex space-x-6">
+            <Link href="/" className="text-gray-600 hover:text-blue-600">
+              Inicio
+            </Link>
+            <Link href="/pricing" className="text-gray-600 hover:text-blue-600">
+              Precios
+            </Link>
+            <Link href="/dashboard" className="text-blue-600 font-medium">
+              Dashboard
+            </Link>
+          </nav>
+          <Button asChild>
+            <Link href="/pricing">Suscribirse</Link>
+          </Button>
+        </div>
+      </header>
+
+      {/* Dashboard Content */}
+      <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Dashboard</h1>
-          <p className="text-gray-600">Bienvenido a tu panel de control de TravelDeals Pro</p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Dashboard de Ofertas</h1>
+          <p className="text-gray-600">Descubre las mejores ofertas de viaje disponibles ahora</p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-6 mb-8">
+        {/* Stats Cards */}
+        <div className="grid md:grid-cols-4 gap-6 mb-8">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Suscripción</CardTitle>
-              <CheckCircle className="h-4 w-4 text-green-600" />
+              <CardTitle className="text-sm font-medium">Ofertas Activas</CardTitle>
+              <TrendingDown className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">Premium Plus</div>
-              <p className="text-xs text-muted-foreground">Activa hasta 28/09/2025</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Ofertas Encontradas</CardTitle>
-              <Clock className="h-4 w-4 text-blue-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">47</div>
-              <p className="text-xs text-muted-foreground">Este mes</p>
+              <div className="text-2xl font-bold">1,234</div>
+              <p className="text-xs text-muted-foreground">+20% desde ayer</p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Ahorro Total</CardTitle>
-              <CreditCard className="h-4 w-4 text-green-600" />
+              <CardTitle className="text-sm font-medium">Ahorro Promedio</CardTitle>
+              <Star className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">€1,247</div>
-              <p className="text-xs text-muted-foreground">En los últimos 6 meses</p>
-            </CardContent>
-          </Card>
-        </div>
-
-        <div className="grid md:grid-cols-2 gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Ofertas Recientes</CardTitle>
-              <CardDescription>Las mejores ofertas encontradas para ti</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
-                  <div>
-                    <p className="font-medium">Madrid → París</p>
-                    <p className="text-sm text-gray-600">Vuelo directo • 2h 15m</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-bold text-blue-600">€89</p>
-                    <Badge variant="secondary">-45%</Badge>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
-                  <div>
-                    <p className="font-medium">Hotel Roma Centro</p>
-                    <p className="text-sm text-gray-600">3 noches • Desayuno incluido</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-bold text-green-600">€156</p>
-                    <Badge variant="secondary">-30%</Badge>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between p-3 bg-purple-50 rounded-lg">
-                  <div>
-                    <p className="font-medium">Seguro de Viaje Europa</p>
-                    <p className="text-sm text-gray-600">Cobertura completa • 15 días</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-bold text-purple-600">€23</p>
-                    <Badge variant="secondary">-20%</Badge>
-                  </div>
-                </div>
-              </div>
+              <div className="text-2xl font-bold">€456</div>
+              <p className="text-xs text-muted-foreground">Por reserva</p>
             </CardContent>
           </Card>
 
           <Card>
-            <CardHeader>
-              <CardTitle>Configuración de Alertas</CardTitle>
-              <CardDescription>Personaliza tus notificaciones</CardDescription>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Destinos</CardTitle>
+              <MapPin className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-medium">Ofertas de Vuelos</p>
-                    <p className="text-sm text-gray-600">Notificaciones instantáneas</p>
-                  </div>
-                  <Badge variant="outline" className="bg-green-50 text-green-700">
-                    Activo
-                  </Badge>
-                </div>
+              <div className="text-2xl font-bold">89</div>
+              <p className="text-xs text-muted-foreground">Países disponibles</p>
+            </CardContent>
+          </Card>
 
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-medium">Descuentos en Hoteles</p>
-                    <p className="text-sm text-gray-600">Alertas diarias</p>
-                  </div>
-                  <Badge variant="outline" className="bg-green-50 text-green-700">
-                    Activo
-                  </Badge>
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-medium">Ofertas de Seguros</p>
-                    <p className="text-sm text-gray-600">Alertas semanales</p>
-                  </div>
-                  <Badge variant="outline" className="bg-gray-50 text-gray-700">
-                    Pausado
-                  </Badge>
-                </div>
-              </div>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Tiempo Restante</CardTitle>
+              <Clock className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">2h 15m</div>
+              <p className="text-xs text-muted-foreground">Próxima actualización</p>
             </CardContent>
           </Card>
         </div>
+
+        {/* Featured Deals */}
+        <div className="mb-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">Ofertas Destacadas</h2>
+          <div className="grid md:grid-cols-3 gap-6">
+            <Card>
+              <CardHeader>
+                <div className="flex justify-between items-start">
+                  <div>
+                    <CardTitle className="text-lg">Madrid → París</CardTitle>
+                    <CardDescription>Vuelo + Hotel 3 noches</CardDescription>
+                  </div>
+                  <Badge variant="destructive">-60%</Badge>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="flex justify-between items-center mb-4">
+                  <div>
+                    <span className="text-2xl font-bold text-green-600">€189</span>
+                    <span className="text-sm text-gray-500 line-through ml-2">€475</span>
+                  </div>
+                  <div className="flex items-center">
+                    <Star className="h-4 w-4 text-yellow-400 fill-current" />
+                    <span className="text-sm text-gray-600 ml-1">4.8</span>
+                  </div>
+                </div>
+                <Button className="w-full" disabled>
+                  Suscríbete para ver
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <div className="flex justify-between items-start">
+                  <div>
+                    <CardTitle className="text-lg">Barcelona → Roma</CardTitle>
+                    <CardDescription>Vuelo + Hotel 4 noches</CardDescription>
+                  </div>
+                  <Badge variant="destructive">-55%</Badge>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="flex justify-between items-center mb-4">
+                  <div>
+                    <span className="text-2xl font-bold text-green-600">€299</span>
+                    <span className="text-sm text-gray-500 line-through ml-2">€665</span>
+                  </div>
+                  <div className="flex items-center">
+                    <Star className="h-4 w-4 text-yellow-400 fill-current" />
+                    <span className="text-sm text-gray-600 ml-1">4.7</span>
+                  </div>
+                </div>
+                <Button className="w-full" disabled>
+                  Suscríbete para ver
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <div className="flex justify-between items-start">
+                  <div>
+                    <CardTitle className="text-lg">Valencia → Londres</CardTitle>
+                    <CardDescription>Vuelo + Hotel 2 noches</CardDescription>
+                  </div>
+                  <Badge variant="destructive">-70%</Badge>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="flex justify-between items-center mb-4">
+                  <div>
+                    <span className="text-2xl font-bold text-green-600">€159</span>
+                    <span className="text-sm text-gray-500 line-through ml-2">€530</span>
+                  </div>
+                  <div className="flex items-center">
+                    <Star className="h-4 w-4 text-yellow-400 fill-current" />
+                    <span className="text-sm text-gray-600 ml-1">4.9</span>
+                  </div>
+                </div>
+                <Button className="w-full" disabled>
+                  Suscríbete para ver
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+
+        {/* CTA Section */}
+        <Card className="bg-blue-600 text-white">
+          <CardHeader className="text-center">
+            <CardTitle className="text-2xl">¿Listo para acceder a todas las ofertas?</CardTitle>
+            <CardDescription className="text-blue-100">
+              Suscríbete ahora y comienza a ahorrar en tus viajes
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="text-center">
+            <Button size="lg" variant="secondary" asChild>
+              <Link href="/pricing">Ver Planes de Suscripción</Link>
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     </div>
   )

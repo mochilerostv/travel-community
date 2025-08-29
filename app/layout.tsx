@@ -6,8 +6,8 @@ import "./globals.css"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "TravelDeals Pro - Mejores Ofertas de Viaje",
-  description: "Encuentra las mejores ofertas de vuelos, hoteles y seguros de viaje",
+  title: "Travel Community - Ofertas Exclusivas de Viaje",
+  description: "Descubre las mejores ofertas de viaje, vuelos y hoteles con descuentos de hasta el 70%",
     generator: 'v0.app'
 }
 

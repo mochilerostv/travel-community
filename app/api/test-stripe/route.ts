@@ -7,27 +7,41 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 
 export async function GET() {
   try {
-    // Verificar conexión con Stripe
-    const prices = await stripe.prices.list({ limit: 10 })
+    // Verificar configuración de variables de entorno
+    const envVars = {
+      STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY ? "✅ Configurada" : "❌ No configurada",
+      NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+        ? "✅ Configurada"
+        : "❌ No configurada",
+      NEXT_PUBLIC_BASE_URL: process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000",
+    }
+
+    // Obtener productos de Stripe
+    const products = await stripe.products.list({ limit: 10 })
+    const prices = await stripe.prices.list({ limit: 20 })
 
     return NextResponse.json({
-      success: true,
-      message: "Stripe configurado correctamente",
-      priceIds: {
-        premium: process.env.STRIPE_PREMIUM_PRICE_ID,
-        premium_plus: process.env.STRIPE_PREMIUM_PLUS_PRICE_ID,
-      },
-      availablePrices: prices.data.map((price) => ({
+      status: "✅ Conexión con Stripe exitosa",
+      environment: process.env.NODE_ENV,
+      envVars,
+      products: products.data.map((product) => ({
+        id: product.id,
+        name: product.name,
+        description: product.description,
+      })),
+      prices: prices.data.map((price) => ({
         id: price.id,
-        amount: price.unit_amount,
-        currency: price.currency,
         product: price.product,
+        unit_amount: price.unit_amount,
+        currency: price.currency,
+        recurring: price.recurring,
       })),
     })
   } catch (error) {
+    console.error("Error en test de Stripe:", error)
     return NextResponse.json(
       {
-        success: false,
+        status: "❌ Error conectando con Stripe",
         error: error instanceof Error ? error.message : "Error desconocido",
       },
       { status: 500 },

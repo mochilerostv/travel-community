@@ -7,23 +7,16 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 
 export async function POST(request: NextRequest) {
   try {
-    const { plan } = await request.json()
+    const { priceId } = await request.json()
 
-    console.log("Plan solicitado:", plan)
-
-    // Price IDs de tus productos en Stripe
-    const prices = {
-      premium: process.env.STRIPE_PREMIUM_PRICE_ID,
-      premium_plus: process.env.STRIPE_PREMIUM_PLUS_PRICE_ID,
-    }
-
-    const priceId = prices[plan as keyof typeof prices]
+    console.log("Recibido Price ID:", priceId)
 
     if (!priceId) {
-      return NextResponse.json({ error: "Plan no válido" }, { status: 400 })
+      console.error("Price ID no proporcionado")
+      return NextResponse.json({ error: "Price ID es requerido" }, { status: 400 })
     }
 
-    console.log("Price ID:", priceId)
+    console.log("Creando sesión de checkout...")
 
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
@@ -34,15 +27,27 @@ export async function POST(request: NextRequest) {
           quantity: 1,
         },
       ],
-      success_url: `${process.env.NEXT_PUBLIC_BASE_URL}/dashboard?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL}/pricing`,
+      success_url: `${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/dashboard?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/pricing`,
+      allow_promotion_codes: true,
+      billing_address_collection: "required",
+      metadata: {
+        priceId: priceId,
+      },
     })
 
-    console.log("Sesión creada:", session.id)
+    console.log("Sesión creada exitosamente:", session.id)
+    console.log("URL de checkout:", session.url)
 
     return NextResponse.json({ url: session.url })
   } catch (error) {
-    console.error("Error:", error)
-    return NextResponse.json({ error: "Error creando sesión" }, { status: 500 })
+    console.error("Error creando sesión de checkout:", error)
+    return NextResponse.json(
+      {
+        error: "Error creando sesión de checkout",
+        details: error instanceof Error ? error.message : "Error desconocido",
+      },
+      { status: 500 },
+    )
   }
 }
