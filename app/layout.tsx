@@ -7,7 +7,8 @@ const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
   title: "Travel Community - Ofertas Exclusivas de Viaje",
-  description: "Descubre las mejores ofertas de viaje, vuelos y hoteles con descuentos de hasta el 70%",
+  description:
+    "Descubre las mejores ofertas de vuelos, hoteles y paquetes vacacionales. Únete a nuestra comunidad de viajeros.",
     generator: 'v0.app'
 }
 

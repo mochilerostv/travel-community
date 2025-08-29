@@ -9,17 +9,13 @@ export async function POST(request: NextRequest) {
   try {
     const { priceId } = await request.json()
 
-    console.log("Recibido Price ID:", priceId)
-
     if (!priceId) {
-      console.error("Price ID no proporcionado")
       return NextResponse.json({ error: "Price ID es requerido" }, { status: 400 })
     }
 
-    console.log("Creando sesión de checkout...")
+    console.log("Creando sesión de checkout para Price ID:", priceId)
 
     const session = await stripe.checkout.sessions.create({
-      mode: "subscription",
       payment_method_types: ["card"],
       line_items: [
         {
@@ -27,27 +23,19 @@ export async function POST(request: NextRequest) {
           quantity: 1,
         },
       ],
-      success_url: `${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/dashboard?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/pricing`,
+      mode: "subscription",
+      success_url: `${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/dashboard?success=true`,
+      cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/pricing?canceled=true`,
       allow_promotion_codes: true,
       billing_address_collection: "required",
-      metadata: {
-        priceId: priceId,
-      },
+      customer_creation: "always",
     })
 
     console.log("Sesión creada exitosamente:", session.id)
-    console.log("URL de checkout:", session.url)
 
     return NextResponse.json({ url: session.url })
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error creando sesión de checkout:", error)
-    return NextResponse.json(
-      {
-        error: "Error creando sesión de checkout",
-        details: error instanceof Error ? error.message : "Error desconocido",
-      },
-      { status: 500 },
-    )
+    return NextResponse.json({ error: "Error creando sesión de checkout", details: error.message }, { status: 500 })
   }
 }

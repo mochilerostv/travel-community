@@ -45,7 +45,7 @@ export default function PricingPage() {
       name: "Premium",
       description: "Plan básico con todas las funciones esenciales",
       monthly: { price: "€1,99", priceId: "price_1S0wwGG5QzPmCFzEnfW842x5" },
-      yearly: { price: "€19,99", priceId: "price_1S0x0NG5QzPmCFzEQJvQvQvQ", savings: "17%" },
+      yearly: { price: "€19,99", priceId: "price_1S0wwGG5QzPmCFzEnfW842x5", savings: "17%" }, // Usando el mismo por ahora
       features: [
         "Alertas de errores de tarifa",
         "Chollos de hoteles verificados",
@@ -59,7 +59,7 @@ export default function PricingPage() {
       name: "Premium Plus",
       description: "Plan completo con funciones avanzadas",
       monthly: { price: "€2,49", priceId: "price_1S0wwzG5QzPmCFzEvMFd07Hg" },
-      yearly: { price: "€24,99", priceId: "price_1S0x0hG5QzPmCFzEabcdEFGH", savings: "17%" },
+      yearly: { price: "€24,99", priceId: "price_1S0wwzG5QzPmCFzEvMFd07Hg", savings: "17%" }, // Usando el mismo por ahora
       features: [
         "Todo lo de Premium",
         "Alertas prioritarias",
@@ -122,7 +122,9 @@ export default function PricingPage() {
               </span>
               <button
                 onClick={() => setBillingCycle(billingCycle === "monthly" ? "yearly" : "monthly")}
-                className="relative inline-flex h-6 w-11 items-center rounded-full bg-gray-200 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+                  billingCycle === "yearly" ? "bg-blue-600" : "bg-gray-200"
+                }`}
               >
                 <span
                   className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
