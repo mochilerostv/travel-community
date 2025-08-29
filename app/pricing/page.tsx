@@ -59,7 +59,7 @@ export default function PricingPage() {
       name: "Premium Plus",
       description: "Plan completo con funciones avanzadas",
       monthly: { price: "€2,49", priceId: "price_1S0wwzG5QzPmCFzEvMFd07Hg" },
-      yearly: { price: "€22,97", priceId: "price_1S1Bpc7IrGsL9XwMTIGeYRTV", savings: "17%" }, // Usando el mismo por ahora
+      yearly: { price: "€22,97", priceId: "price_1Rtc04G5QzPmCFzENGR2Li54", savings: "17%" }, // Usando el mismo por ahora
       features: [
         "Todo lo de Premium",
         "Alertas prioritarias",
